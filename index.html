@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-fs="md">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>English Writing Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ---------- Design tokens ---------- */
+:root{
+  --bg:#FBF8F1; --bg2:#F3EEE3; --surface:#FFFFFF; --surface2:#FAF6EE;
+  --ink:#232028; --ink-soft:#6B6577; --line:#EAE3D6; --line2:#E0D8C7;
+  --primary:#5A46E8; --primary-soft:#EEEBFD; --primary-ink:#3B2CB8;
+  --flame:#FF7A3C; --flame-soft:#FFEDE2;
+  --gold:#F5B70A; --green:#1FA97A; --green-soft:#E4F6EF; --red:#E85869;
+  --shadow:0 1px 2px rgba(40,30,20,.05),0 8px 24px -12px rgba(40,30,20,.18);
+  --shadow-lg:0 24px 48px -18px rgba(40,30,20,.28);
+  --r:20px; --r-sm:14px; --r-xs:10px;
+  --maxw:620px;
+  /* rubric palette (light) */
+  --rb-grammar:#E11D48;   --rb-grammar-bg:#FFE1E7;
+  --rb-spelling:#B45309;  --rb-spelling-bg:#FBEAD0;
+  --rb-clarity:#0369A1;   --rb-clarity-bg:#DBEEFB;
+  --rb-coherence:#6D28D9; --rb-coherence-bg:#ECE5FD;
+  --rb-vocab:#047857;     --rb-vocab-bg:#D6F3E6;
+}
+html[data-theme="dark"]{
+  --bg:#15131A; --bg2:#1D1A24; --surface:#221E2B; --surface2:#1B1823;
+  --ink:#F2EEF7; --ink-soft:#A69FB4; --line:#332E3F; --line2:#3E384C;
+  --primary:#8878FF; --primary-soft:#2A2440; --primary-ink:#C9BEFF;
+  --flame:#FF8C55; --flame-soft:#3A2418;
+  --gold:#F7C948; --green:#3FC895; --green-soft:#17392C; --red:#F26E7E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  --shadow-lg:0 26px 54px -20px rgba(0,0,0,.7);
+  --rb-grammar:#FB7185;   --rb-grammar-bg:rgba(251,113,133,.17);
+  --rb-spelling:#FBBF24;  --rb-spelling-bg:rgba(251,191,36,.17);
+  --rb-clarity:#38BDF8;   --rb-clarity-bg:rgba(56,189,248,.17);
+  --rb-coherence:#A78BFA; --rb-coherence-bg:rgba(167,139,250,.17);
+  --rb-vocab:#34D399;     --rb-vocab-bg:rgba(52,211,153,.17);
+}
+html{font-size:17px}
+html[data-fs="sm"]{font-size:15px}
+html[data-fs="md"]{font-size:17px}
+html[data-fs="lg"]{font-size:19.5px}
+html[data-fs="xl"]{font-size:22px}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--ink);
+  line-height:1.5; -webkit-font-smoothing:antialiased; overscroll-behavior-y:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:1rem;color:inherit}
+.serif{font-family:'Fraunces',Georgia,serif}
+::selection{background:var(--primary);color:#fff}
+
+/* ---------- App shell ---------- */
+#app{max-width:var(--maxw);margin:0 auto;height:100dvh;position:relative;background:var(--bg);
+  display:flex;flex-direction:column;overflow:hidden}
+.topbar{flex:none;background:var(--bg);
+  padding:calc(env(safe-area-inset-top) + .9rem) 1.15rem .7rem;
+  display:flex;align-items:center;justify-content:space-between;gap:.6rem;border-bottom:1px solid transparent}
+.topbar.bordered{border-bottom-color:var(--line)}
+.topbar h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
+.topbar .sub{color:var(--ink-soft);font-size:.82rem;font-weight:500;margin-top:.05rem}
+.brand-dot{width:.62rem;height:.62rem;border-radius:50%;background:var(--primary);display:inline-block}
+
+main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:.5rem 1.15rem 1.8rem;animation:fade .32s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.nav-brand{display:none}
+#overlay-root,#modal-root{display:contents}
+
+/* ---------- Bottom nav ---------- */
+.tabbar{flex:none;background:var(--surface);
+  border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);
+  padding:.35rem .4rem calc(env(safe-area-inset-bottom) + .35rem)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.5rem 0 .35rem;
+  color:var(--ink-soft);border-radius:14px;transition:color .18s,background .18s;position:relative}
+.tab svg{width:1.5rem;height:1.5rem;stroke-width:2}
+.tab span{font-size:.68rem;font-weight:700;letter-spacing:.01em}
+.tab.active{color:var(--primary)}
+.tab.active .tabicon{background:var(--primary-soft)}
+.tabicon{padding:.28rem .9rem;border-radius:12px;display:flex;transition:background .2s}
+
+/* ---------- Buttons / chips ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  background:var(--primary);color:#fff;font-weight:700;font-size:1.02rem;
+  padding:1rem 1.2rem;border-radius:var(--r-sm);width:100%;transition:transform .12s,filter .2s;
+  box-shadow:0 8px 20px -8px color-mix(in srgb,var(--primary) 60%,transparent)}
+.btn:active{transform:scale(.975);filter:brightness(.96)}
+.btn.ghost{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);border:1px solid var(--line)}
+.btn.soft{background:var(--primary-soft);color:var(--primary-ink);box-shadow:none}
+.btn.danger{background:var(--red);box-shadow:0 8px 20px -8px color-mix(in srgb,var(--red) 55%,transparent)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn svg{width:1.2rem;height:1.2rem}
+.row2{display:flex;gap:.6rem}
+.row2 .btn{width:100%}
+
+.chip{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .9rem;border-radius:999px;
+  background:var(--surface);border:1.5px solid var(--line);color:var(--ink-soft);
+  font-weight:600;font-size:.9rem;white-space:nowrap;transition:.16s}
+.chip:active{transform:scale(.95)}
+.chip.on{border-color:transparent;color:#fff;font-weight:700}
+.chip svg{width:1rem;height:1rem;stroke-width:2.2}
+
+.iconbtn{width:2.5rem;height:2.5rem;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);box-shadow:var(--shadow)}
+.iconbtn svg{width:1.25rem;height:1.25rem;stroke-width:2}
+.iconbtn:active{transform:scale(.92)}
+
+/* ---------- Cards / fields ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.field{margin-bottom:1.05rem}
+.field label{display:block;font-weight:700;font-size:.82rem;color:var(--ink-soft);
+  text-transform:uppercase;letter-spacing:.06em;margin:0 0 .5rem .2rem}
+.area{width:100%;background:var(--surface);border:1.5px solid var(--line2);border-radius:var(--r-sm);
+  padding:.95rem 1rem;font-size:1.05rem;font-weight:500;transition:border .18s,box-shadow .18s;color:var(--ink)}
+.area:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 15%,transparent)}
+.area{min-height:9rem;resize:vertical;line-height:1.6}
+.eyebrow{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+.cat-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:800;
+  padding:.28rem .6rem;border-radius:999px;letter-spacing:.02em}
+
+/* ---------- Filter row ---------- */
+.filterrow{display:flex;gap:.5rem;overflow-x:auto;padding:.15rem .1rem .55rem;margin:0 -.15rem;scrollbar-width:none}
+.filterrow::-webkit-scrollbar{display:none}
+
+/* ---------- Write: mode toggle + capture ---------- */
+.segmode{display:inline-flex;background:var(--bg2);border-radius:12px;padding:.28rem;gap:.25rem;width:100%;margin-bottom:1.1rem}
+.segmode button{flex:1;padding:.6rem;border-radius:9px;font-weight:800;font-size:.92rem;color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;gap:.4rem;transition:.15s}
+.segmode button svg{width:1.05rem;height:1.05rem}
+.segmode button.on{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
+
+.drop{border:2px dashed var(--line2);border-radius:var(--r);background:var(--surface2);
+  padding:1.6rem 1.1rem;text-align:center;color:var(--ink-soft)}
+.drop .ic{width:3rem;height:3rem;border-radius:16px;background:var(--primary-soft);color:var(--primary-ink);
+  display:flex;align-items:center;justify-content:center;margin:0 auto .7rem}
+.drop .ic svg{width:1.5rem;height:1.5rem}
+.drop h4{color:var(--ink);font-weight:800;font-size:1.05rem;margin-bottom:.2rem}
+.drop p{font-size:.86rem;line-height:1.5;max-width:22rem;margin:0 auto .9rem}
+.caprow{display:flex;gap:.55rem;max-width:22rem;margin:0 auto}
+.caprow .btn{font-size:.95rem;padding:.85rem}
+
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:.6rem;margin:1rem 0}
+.thumb{position:relative;aspect-ratio:3/4;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line);
+  background:var(--surface2);box-shadow:var(--shadow)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .rm{position:absolute;top:.3rem;right:.3rem;width:1.55rem;height:1.55rem;border-radius:50%;
+  background:rgba(20,15,25,.62);color:#fff;display:flex;align-items:center;justify-content:center}
+.thumb .rm svg{width:.9rem;height:.9rem;stroke-width:2.5}
+.thumb .pg{position:absolute;bottom:.3rem;left:.3rem;font-size:.66rem;font-weight:800;color:#fff;
+  background:rgba(20,15,25,.62);padding:.1rem .4rem;border-radius:6px}
+.thumb.add{display:flex;align-items:center;justify-content:center;color:var(--ink-soft);border-style:dashed;cursor:pointer}
+.thumb.add svg{width:1.4rem;height:1.4rem}
+
+.notice{background:var(--flame-soft);border:1px solid color-mix(in srgb,var(--flame) 30%,transparent);
+  border-radius:var(--r-sm);padding:.85rem 1rem;font-size:.86rem;font-weight:600;color:var(--ink);
+  line-height:1.5;margin-bottom:1rem;display:flex;gap:.6rem;align-items:flex-start}
+.notice.err{background:color-mix(in srgb,var(--red) 12%,transparent);border-color:color-mix(in srgb,var(--red) 35%,transparent)}
+.notice b{font-weight:800}
+.notice a{color:var(--primary);font-weight:800;text-decoration:none}
+
+/* ---------- Processing ---------- */
+.proc{padding:2.6rem 1.4rem;text-align:center}
+.spinner{width:2.8rem;height:2.8rem;border-radius:50%;border:3px solid var(--line);
+  border-top-color:var(--primary);margin:0 auto 1.3rem;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.procsteps{display:flex;flex-direction:column;gap:.65rem;max-width:19rem;margin:1.2rem auto 0;text-align:left}
+.pstep{display:flex;align-items:center;gap:.7rem;font-weight:700;font-size:.95rem;color:var(--ink-soft)}
+.pstep .dot{width:1.4rem;height:1.4rem;border-radius:50%;border:2px solid var(--line2);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.pstep.done{color:var(--ink)} .pstep.done .dot{background:var(--green);border-color:var(--green);color:#fff}
+.pstep.active{color:var(--primary)} .pstep.active .dot{border-color:var(--primary);border-top-color:transparent;animation:spin .8s linear infinite}
+
+/* ---------- Result ---------- */
+.resulthead{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin:.2rem .1rem 1rem}
+.resulthead .meta{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.82rem;color:var(--ink-soft);font-weight:600}
+.overall{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:3.6rem;padding:.35rem .6rem;border-radius:14px;background:var(--primary-soft);color:var(--primary-ink)}
+.overall .n{font-family:'Fraunces',serif;font-size:1.55rem;font-weight:700;line-height:1}
+.overall .k{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+
+.sec{margin-bottom:1.15rem}
+.sec-h{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-soft);
+  margin:0 .1rem .55rem;display:flex;align-items:center;justify-content:space-between}
+.sec-h .mini{font-weight:700;text-transform:none;letter-spacing:0;color:var(--primary);font-size:.8rem}
+.textcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:1.1rem 1.15rem;font-size:1.05rem;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.textcard.serif{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:1.12rem}
+.origedit{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:1.1rem 1.15rem;font-size:1.02rem;line-height:1.7;color:var(--ink);
+  min-height:5rem;resize:vertical;white-space:pre-wrap}
+.origedit:focus{outline:none;border-color:var(--primary)}
+
+/* highlights */
+.hl{border-radius:5px;padding:.02em .12em;cursor:pointer;border-bottom:2px solid transparent;
+  transition:filter .15s;text-decoration:none}
+.hl:active{filter:brightness(.94)}
+.hl-grammar{background:var(--rb-grammar-bg);border-bottom-color:var(--rb-grammar)}
+.hl-spelling{background:var(--rb-spelling-bg);border-bottom-color:var(--rb-spelling)}
+.hl-clarity{background:var(--rb-clarity-bg);border-bottom-color:var(--rb-clarity)}
+.hl-coherence{background:var(--rb-coherence-bg);border-bottom-color:var(--rb-coherence)}
+.hl-vocabulary{background:var(--rb-vocab-bg);border-bottom-color:var(--rb-vocab)}
+
+.legend{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.7rem}
+.legchip{display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:700;color:var(--ink-soft);
+  padding:.25rem .55rem;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+.legdot{width:.7rem;height:.7rem;border-radius:3px}
+
+/* score bars */
+.scores{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:1.1rem 1.15rem}
+.scorebar{margin-bottom:.85rem}
+.scorebar:last-child{margin-bottom:0}
+.sb-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+.sb-dot{width:.7rem;height:.7rem;border-radius:50%;flex:none}
+.sb-l{font-weight:700;font-size:.95rem}
+.sb-v{margin-left:auto;font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem}
+.sb-track{height:.55rem;background:var(--bg2);border-radius:999px;overflow:hidden}
+.sb-track i{display:block;height:100%;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* rubric feedback */
+.rubcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:1rem 1.1rem;margin-bottom:.7rem;border-left:4px solid var(--rc,var(--primary))}
+.rubcard .rh{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+.rubcard .rh .name{font-weight:800;font-size:1rem}
+.rubcard .rh .sc{margin-left:auto;font-size:.8rem;font-weight:800;color:var(--ink-soft)}
+.rubcard p{font-size:.95rem;line-height:1.6;color:var(--ink)}
+.summary{background:var(--primary-soft);border-radius:var(--r);padding:1.1rem 1.15rem;color:var(--primary-ink);
+  font-size:1rem;line-height:1.6;font-weight:600}
+
+.typolist{display:flex;flex-direction:column;gap:.4rem}
+.typorow{display:flex;align-items:center;gap:.5rem;font-size:.95rem;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:.6rem .8rem;box-shadow:var(--shadow)}
+.typorow .f{color:var(--ink-soft);text-decoration:line-through}
+.typorow .arw{color:var(--rb-spelling)}
+.typorow .t{font-weight:700}
+
+/* save bar */
+.savebar{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin:.2rem 0 .7rem;flex-wrap:wrap}
+.savestate{font-size:.85rem;font-weight:700;color:var(--ink-soft);display:inline-flex;align-items:center;gap:.35rem}
+.savestate.on{color:var(--green)}
+.savebar .btn svg{width:1.1rem;height:1.1rem}
+
+/* expressions */
+.expcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:1rem 1.1rem;margin-bottom:.7rem}
+.expphrase{font-family:'Fraunces',serif;font-weight:600;font-size:1.12rem;margin-bottom:.65rem;color:var(--ink);line-height:1.3}
+.regrow{display:flex;gap:.6rem;align-items:baseline;margin-bottom:.45rem}
+.rtag{flex:none;font-size:.7rem;font-weight:800;padding:.22rem .55rem;border-radius:999px;white-space:nowrap;min-width:5.4rem;text-align:center}
+.rtag.spoken{background:var(--rb-clarity-bg);color:var(--rb-clarity)}
+.rtag.written{background:var(--rb-coherence-bg);color:var(--rb-coherence)}
+.rtxt{font-size:1rem;line-height:1.5;font-weight:600}
+.relrow{display:flex;gap:.6rem;align-items:baseline;margin-top:.5rem;padding-top:.5rem;border-top:1px dashed var(--line)}
+.rk{flex:none;font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:.18rem .45rem;border-radius:6px;min-width:4.6rem;text-align:center}
+.rk.sim{background:var(--rb-vocab-bg);color:var(--rb-vocab)}
+.rk.opp{background:var(--rb-grammar-bg);color:var(--rb-grammar)}
+.rv{font-size:.95rem;line-height:1.55;color:var(--ink)}
+.expnote{margin-top:.6rem;font-size:.85rem;color:var(--ink-soft);line-height:1.55;font-style:italic}
+
+/* saved badge on history rows */
+.savedbadge{display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:800;color:var(--green);
+  background:var(--green-soft);padding:.15rem .45rem;border-radius:999px}
+
+/* ---------- History ---------- */
+.searchwrap{position:relative;margin-bottom:.85rem}
+.searchwrap svg{position:absolute;left:.95rem;top:50%;transform:translateY(-50%);width:1.2rem;height:1.2rem;color:var(--ink-soft);stroke-width:2}
+.search{width:100%;padding:.85rem 1rem .85rem 2.7rem;border-radius:999px;border:1.5px solid var(--line2);
+  background:var(--surface);font-size:1rem;font-weight:500}
+.search:focus{outline:none;border-color:var(--primary)}
+.hentry{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;
+  margin-bottom:.75rem;box-shadow:var(--shadow);border-left:5px solid var(--catc,var(--primary));transition:transform .12s}
+.hentry:active{transform:scale(.992)}
+.hentry .htop{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.5rem}
+.hentry .snip{font-family:'Fraunces',serif;font-size:1.08rem;line-height:1.4;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hentry .hfoot{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.7rem}
+.hentry .dots{display:flex;gap:.28rem}
+.hentry .rdot{width:.62rem;height:.62rem;border-radius:50%}
+.hentry .date{font-size:.74rem;color:var(--ink-soft);font-weight:600}
+.ovpill{font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;color:var(--primary)}
+
+/* ---------- Empty ---------- */
+.empty{text-align:center;padding:3.4rem 1.5rem;color:var(--ink-soft)}
+.empty .emoji{font-size:2.8rem;margin-bottom:.6rem}
+.empty h3{font-size:1.2rem;color:var(--ink);font-weight:800;margin-bottom:.35rem}
+.empty p{font-size:.95rem;line-height:1.5;max-width:20rem;margin:0 auto}
+
+/* ---------- Insights ---------- */
+.streakcard{background:linear-gradient(135deg,var(--flame),#FF9E3D);border-radius:var(--r);
+  padding:1.3rem 1.4rem;color:#fff;box-shadow:0 16px 32px -16px color-mix(in srgb,var(--flame) 70%,transparent);
+  display:flex;align-items:center;gap:1.1rem;margin-bottom:1rem;position:relative;overflow:hidden}
+.streakcard .flame{font-size:3rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));animation:flicker 2.2s ease-in-out infinite}
+@keyframes flicker{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08) rotate(2deg)}}
+.streakcard .n{font-size:2.6rem;font-weight:800;line-height:1}
+.streakcard .lbl{font-size:.85rem;font-weight:700;opacity:.92}
+.streakcard .r{margin-left:auto;text-align:right;font-size:.8rem;font-weight:600;opacity:.9;line-height:1.6}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.2rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:.85rem .5rem;text-align:center;box-shadow:var(--shadow)}
+.stat .v{font-size:1.5rem;font-weight:800;line-height:1;font-family:'Fraunces',serif}
+.stat .k{font-size:.72rem;color:var(--ink-soft);font-weight:700;margin-top:.25rem}
+.trend{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:1.1rem 1.15rem;margin-bottom:1.1rem}
+.trend svg{width:100%;height:120px;display:block;margin-top:.5rem}
+
+/* ---------- Settings ---------- */
+.setgroup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-bottom:1.1rem;overflow:hidden}
+.setgroup>.gh{padding:.85rem 1.1rem .3rem;font-size:.76rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--ink-soft)}
+.setrow{padding:1rem 1.1rem;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.setrow:first-of-type{border-top:none}
+.setrow .l{font-weight:700;font-size:1rem}
+.setrow .d{font-size:.82rem;color:var(--ink-soft);font-weight:500;margin-top:.15rem}
+.seg{display:inline-flex;background:var(--bg2);border-radius:12px;padding:.25rem;gap:.2rem}
+.seg button{padding:.45rem .7rem;border-radius:9px;font-weight:800;font-size:.85rem;color:var(--ink-soft);transition:.15s}
+.seg button.on{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
+.segA button{font-family:'Fraunces',serif}
+.switch{width:3.2rem;height:1.9rem;border-radius:999px;background:var(--line2);position:relative;transition:.2s;flex:none}
+.switch.on{background:var(--primary)}
+.switch i{position:absolute;top:.22rem;left:.22rem;width:1.46rem;height:1.46rem;border-radius:50%;background:#fff;transition:.22s;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.switch.on i{left:1.52rem}
+.setrow.col{flex-direction:column;align-items:stretch}
+.setrow.col .l{margin-bottom:.6rem}
+.miniinput{width:100%;background:var(--surface2);border:1.5px solid var(--line2);border-radius:var(--r-xs);
+  padding:.7rem .8rem;font-size:.9rem;font-family:ui-monospace,monospace;color:var(--ink)}
+.miniinput:focus{outline:none;border-color:var(--primary)}
+textarea.miniinput{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.55;resize:vertical}
+.synced{display:inline-flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;padding:.25rem .6rem;border-radius:999px}
+.synced.on{color:var(--green);background:var(--green-soft)}
+.synced.off{color:var(--ink-soft);background:var(--bg2)}
+.helpbox{background:var(--surface2);border-radius:var(--r-xs);padding:.9rem 1rem;font-size:.82rem;color:var(--ink-soft);line-height:1.6;margin-top:.6rem}
+.helpbox code{background:var(--bg2);padding:.05rem .3rem;border-radius:5px;font-size:.85em;font-family:ui-monospace,monospace}
+.helpbox pre{background:var(--bg2);padding:.7rem;border-radius:8px;overflow-x:auto;margin:.5rem 0;font-size:.72rem;line-height:1.5}
+
+/* ---------- Modal / sheet ---------- */
+.modal-bg{position:absolute;inset:0;z-index:70;background:rgba(20,15,25,.5);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.modal{background:var(--bg);width:100%;max-width:var(--maxw);border-radius:24px 24px 0 0;
+  padding:1.4rem 1.2rem calc(env(safe-area-inset-bottom) + 1.4rem);max-height:90%;overflow-y:auto;
+  animation:slideup .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+.modal .grab{width:2.4rem;height:.3rem;background:var(--line2);border-radius:999px;margin:0 auto 1.1rem}
+.modal h3{font-size:1.25rem;font-weight:800;margin-bottom:1.1rem}
+.modal .row2{display:flex;gap:.6rem;margin-top:.4rem}
+.modal input.input{width:100%;background:var(--surface);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:.9rem 1rem;font-size:1.05rem;font-weight:500}
+.modal input.input:focus{outline:none;border-color:var(--primary)}
+.modal textarea.input{width:100%;background:var(--surface);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:.9rem 1rem;font-size:1rem;line-height:1.55;min-height:6rem;resize:vertical}
+
+/* span detail sheet */
+.spanhead{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.1rem;margin-bottom:.9rem}
+.rubdot{width:.85rem;height:.85rem;border-radius:50%}
+.ba{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-bottom:1rem;box-shadow:var(--shadow)}
+.ba-row{display:flex;gap:.7rem;padding:.85rem 1rem;align-items:flex-start;border-top:1px solid var(--line)}
+.ba-row:first-child{border-top:none}
+.ba-k{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);min-width:3.4rem;padding-top:.15rem}
+.ba-v{font-size:1.05rem;line-height:1.5;font-weight:600}
+.ba-v.from{color:var(--ink-soft);text-decoration:line-through}
+.ba-v.to{color:var(--ink)}
+.reason{font-size:.98rem;line-height:1.65;color:var(--ink);margin-bottom:1.2rem}
+
+/* result overlay (history detail) */
+.overlay{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;animation:slideup .3s cubic-bezier(.2,.8,.2,1)}
+.ovhead{padding:calc(env(safe-area-inset-top) + .8rem) 1.15rem .7rem;display:flex;align-items:center;gap:.7rem;border-bottom:1px solid var(--line)}
+.ovhead h2{font-size:1.15rem;font-weight:800;flex:1;min-width:0}
+.ovbody{flex:1;overflow-y:auto;padding:.9rem 1.15rem calc(env(safe-area-inset-bottom) + 1.6rem)}
+
+/* ---------- Toast ---------- */
+#toast{position:absolute;bottom:5.2rem;left:50%;transform:translateX(-50%) translateY(2rem);z-index:90;
+  background:var(--ink);color:var(--bg);padding:.8rem 1.2rem;border-radius:999px;font-weight:700;font-size:.92rem;
+  box-shadow:var(--shadow-lg);opacity:0;transition:.3s cubic-bezier(.2,.8,.2,1);pointer-events:none;
+  display:flex;align-items:center;gap:.5rem;max-width:90%}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast .em{font-size:1.1rem}
+
+/* ================= Wide screens ================= */
+@media (min-width:840px){
+  body{background:var(--bg)}
+  #app{max-width:1180px;height:100vh;display:grid;
+    grid-template-columns:236px minmax(0,1fr);grid-template-rows:auto 1fr;
+    grid-template-areas:"nav top" "nav main";overflow:hidden}
+  .topbar{grid-area:top;padding:1.5rem 2.2rem .9rem;border-bottom:1px solid var(--line)}
+  .topbar h1{font-size:1.75rem}
+  main{grid-area:main;padding:1.4rem 2.2rem 2.4rem}
+  .content{max-width:720px;margin:0 auto}
+  .tabbar{grid-area:nav;display:flex;flex-direction:column;gap:.25rem;border-top:none;
+    border-right:1px solid var(--line);background:var(--surface2);padding:1.5rem .8rem}
+  .nav-brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.28rem;
+    letter-spacing:-.02em;padding:.3rem .8rem 1.4rem}
+  .nav-brand .brand-dot{width:.7rem;height:.7rem}
+  .tab{flex-direction:row;justify-content:flex-start;align-items:center;gap:.8rem;padding:.85rem 1rem;border-radius:14px}
+  .tab .tabicon{padding:0;background:none}
+  .tab.active .tabicon{background:none}
+  .tab svg{width:1.4rem;height:1.4rem}
+  .tab span:last-child{font-size:1rem;font-weight:700}
+  .tab.active{background:var(--primary-soft)}
+  .tab:hover:not(.active){background:color-mix(in srgb,var(--ink) 5%,transparent)}
+  .modal-bg{align-items:center}
+  .modal{max-width:520px;border-radius:24px;max-height:86%}
+  .ovhead,.ovbody{max-width:760px;margin-left:auto;margin-right:auto;width:100%}
+  #toast{bottom:1.8rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.05ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <main id="view"></main>
+  <nav class="tabbar" id="tabbar"></nav>
+  <div id="overlay-root"></div>
+  <div id="modal-root"></div>
+  <div id="toast"></div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   English Writing Feedback — single file
+   OCR + rubric feedback via Gemini · history in Firebase
+   · study log to Google Sheets · localStorage fallback
+   ============================================================ */
+
+/* ============================================================
+   DEPLOYMENT CONFIG — baked in at build time
+   GitHub Actions replaces the __PLACEHOLDER__ tokens below with
+   repository secrets before publishing. Any token left unreplaced
+   is ignored, so the app still runs locally (sync just stays off).
+   Notes:
+   • GEMINI_KEY / GEMINI_MODEL / SHEETS_WEBHOOK: plain one-line strings.
+   • FIREBASE_CONFIG: a single-line JSON string, e.g.
+     {"apiKey":"…","databaseURL":"https://…","projectId":"…"}
+   Baked values always win over anything stored in the browser.
+   ============================================================ */
+const BAKED = {
+  geminiKey: '__GEMINI_KEY__',
+  model:     '__GEMINI_MODEL__',
+  firebase:  '__FIREBASE_CONFIG__',
+  sheet:     '__SHEETS_WEBHOOK__'
+};
+function bakedVal(v){ return (typeof v==='string' && v && !/^__[A-Z0-9_]+__$/.test(v)) ? v.trim() : ''; }
+let BAKED_KEY=false, BAKED_MODEL=false, BAKED_SYNC=false;
+
+/* ---------- Icons ---------- */
+const I = {
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-6"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v13"/></svg>',
+  type:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2"/><path d="M9 20h6"/><path d="M12 5v15"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+
+/* ---------- Rubrics ---------- */
+const RUBRICS = {
+  grammar:    { label:'Grammar',    v:'--rb-grammar',    scored:true  },
+  clarity:    { label:'Clarity',    v:'--rb-clarity',    scored:true  },
+  vocabulary: { label:'Vocabulary', v:'--rb-vocab',      scored:true  },
+  coherence:  { label:'Coherence',  v:'--rb-coherence',  scored:true  },
+  spelling:   { label:'Spelling',   v:'--rb-spelling',   scored:false }
+};
+const SCORE_KEYS = ['grammar','clarity','vocabulary','coherence'];
+const CATSET = new Set(Object.keys(RUBRICS));
+/* tie-break priority when one edit spans categories (earlier wins) */
+const PRIORITY = ['grammar','coherence','clarity','vocabulary','spelling'];
+
+/* ---------- Categories ---------- */
+const CAT_COLORS = ['#5A46E8','#E8578A','#1FA97A','#F59E0B','#0EA5E9','#8B5CF6','#EF4444','#14B8A6','#64748B'];
+const DEFAULT_CATS = [
+  {name:'Diary',   color:'#5A46E8', emoji:'📔', style:"Personal daily writing. Favour natural, idiomatic everyday English and a relaxed, first-person voice; light informality is fine. Focus on how a fluent speaker would naturally phrase it rather than strict formality."},
+  {name:'Journal', color:'#1FA97A', emoji:'📓', style:"Reflective writing. Encourage clearly organised thoughts and smooth transitions between ideas while keeping the writer's personal voice."},
+  {name:'Essay',   color:'#E8578A', emoji:'📝', style:"Formal / academic writing. Hold it to a higher standard for structure, precise word choice, logical argument flow, and consistent formal register."},
+  {name:'Practice',color:'#F59E0B', emoji:'✍️', style:"Focused practice. Be direct and specific with corrections, and add one compact, reusable rule or tip per issue so the writer can apply it next time."},
+  {name:'Other',   color:'#64748B', emoji:'✳️', style:"General writing. Infer the purpose from the text and match your tone and standards to that purpose."}
+];
+
+const DEFAULT_GUIDELINES =
+`You are an experienced, warm English writing tutor. The writer is an adult and a college graduate who has never studied English abroad, so explain your reasoning clearly and respectfully in plain language — avoid heavy linguistic jargon and never be condescending. Be encouraging but honest: name the real problems and show concrete fixes. Prioritise the issues that most affect a reader's understanding. Treat spelling-level typos separately from the four rubrics.`;
+
+/* ---------- State ---------- */
+const KEY = 'inkwell.v1';
+let memStore = {}, hasLS = true;
+const S = {
+  entries: [],
+  cats: DEFAULT_CATS.slice(),
+  lastCat: 'Diary',
+  settings: { fs:'md', theme:'light' },
+  game: { streak:0, best:0, lastActive:null },
+  cfg: { geminiKey:'', model:'gemini-2.5-flash', firebase:'', sheet:'', guidelines:DEFAULT_GUIDELINES },
+  ui: { tab:'write', filter:'All', q:'' }
+};
+
+function rawGet(k){ if(hasLS){try{return localStorage.getItem(k)}catch(e){hasLS=false}} return memStore[k]||null; }
+function rawSet(k,v){ if(hasLS){try{localStorage.setItem(k,v);return}catch(e){hasLS=false}} memStore[k]=v; }
+function load(){
+  const s = rawGet(KEY);
+  if(s){ try{
+    const d = JSON.parse(s);
+    if(d.entries) S.entries = d.entries;
+    if(d.cats && d.cats.length) S.cats = d.cats;
+    if(d.lastCat) S.lastCat = d.lastCat;
+    if(d.settings) Object.assign(S.settings, d.settings);
+    if(d.game) Object.assign(S.game, d.game);
+    if(d.cfg) Object.assign(S.cfg, d.cfg);
+  }catch(e){ console.warn('load failed', e); } }
+  S.cats.forEach(c=>{ if(typeof c.style!=='string') c.style=''; });
+  if(!S.cfg.model) S.cfg.model='gemini-2.5-flash';
+  if(typeof S.cfg.guidelines!=='string') S.cfg.guidelines=DEFAULT_GUIDELINES;
+
+  // deployment secrets (GitHub Actions) override anything stored locally
+  const bKey=bakedVal(BAKED.geminiKey), bModel=bakedVal(BAKED.model),
+        bFb=bakedVal(BAKED.firebase), bSheet=bakedVal(BAKED.sheet);
+  if(bKey){ S.cfg.geminiKey=bKey; BAKED_KEY=true; }
+  if(bModel){ S.cfg.model=bModel; BAKED_MODEL=true; }
+  if(bFb){ S.cfg.firebase=bFb; }
+  if(bSheet){ S.cfg.sheet=bSheet; }
+  BAKED_SYNC = !!(bFb || bSheet);
+}
+function save(){
+  rawSet(KEY, JSON.stringify({
+    entries:S.entries, cats:S.cats, lastCat:S.lastCat,
+    settings:S.settings, game:S.game, cfg:S.cfg
+  }));
+}
+
+/* ---------- Helpers ---------- */
+const el = id => document.getElementById(id);
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const catOf = name => S.cats.find(c=>c.name===name) || {name,color:'#64748B',emoji:'✳️',style:''};
+const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+function fmtDate(ts){ return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function overallOf(sc){ if(!sc) return 0; return Math.round(SCORE_KEYS.reduce((a,k)=>a+(+sc[k]||0),0)/SCORE_KEYS.length); }
+let toastT;
+function toast(msg, emoji){
+  const t=el('toast'); t.innerHTML=(emoji?`<span class="em">${emoji}</span>`:'')+esc(msg);
+  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+function applyChrome(){
+  document.documentElement.setAttribute('data-theme', S.settings.theme);
+  document.documentElement.setAttribute('data-fs', S.settings.fs);
+}
+function touchStreak(){
+  const tk=todayKey();
+  if(S.game.lastActive===tk) return;
+  const y=new Date(); y.setDate(y.getDate()-1);
+  const yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
+  S.game.streak = (S.game.lastActive===yk) ? S.game.streak+1 : 1;
+  S.game.lastActive=tk;
+  if(S.game.streak>S.game.best) S.game.best=S.game.streak;
+}
+
+/* ============================================================
+   SYNC — Firebase Realtime DB + Google Sheets webhook
+   ============================================================ */
+let fbDB=null, fbReady=false, fbFirstSync=true, fbStatus='';
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+function parseFirebaseConfig(raw){
+  let s=(raw||'').trim(); if(!s) return null;
+  s=s.replace(/^\s*(?:const|let|var)\s+[\w$]+\s*=\s*/,'').replace(/;\s*$/,'').trim();
+  try{ return JSON.parse(s); }catch(e){}
+  try{ return (new Function('return ('+s+')'))(); }catch(e){}
+  return null;
+}
+function fbRefreshStatus(){ if(S.ui.tab==='settings' && el('view')) render(); }
+async function initFirebase(){
+  fbReady=false; fbDB=null; fbFirstSync=true;
+  if(!S.cfg.firebase){ fbStatus=''; return fbRefreshStatus(); }
+  const cfg=parseFirebaseConfig(S.cfg.firebase);
+  if(!cfg){ fbStatus="Couldn't read the config — paste the whole { … } block."; return fbRefreshStatus(); }
+  if(!cfg.databaseURL){ fbStatus="This config has no databaseURL. Open Realtime Database in the console and add its URL."; return fbRefreshStatus(); }
+  try{
+    if(!window.firebase || !window.firebase.database){
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+    }
+    if(!window.firebase || !window.firebase.database) throw new Error('sdk-unavailable');
+    if(!window.firebase.apps.length) window.firebase.initializeApp(cfg);
+    fbDB=window.firebase.database(); fbReady=true; fbStatus='Connected'; fbRefreshStatus();
+    fbDB.ref('feedback').on('value', snap=>{
+      const val=snap.val()||{}; const remote=Object.values(val);
+      const map={}; S.entries.forEach(e=>map[e.id]=e);
+      remote.forEach(e=>{ if(!e||!e.id) return; if(!map[e.id]||(e.updatedAt||0)>=(map[e.id].updatedAt||0)) map[e.id]=e; });
+      S.entries=Object.values(map); save();
+      if(fbFirstSync){ fbFirstSync=false; const ids=new Set(remote.map(e=>e&&e.id)); S.entries.forEach(e=>{ if(!ids.has(e.id)) fbWrite(e); }); }
+      if(S.ui.tab==='history'||S.ui.tab==='insights'||S.ui.tab==='settings') render();
+    }, err=>{ fbStatus='Connected, but the database denied access — open Rules and allow read/write, then Save again.'; fbReady=true; fbRefreshStatus(); });
+  }catch(e){
+    fbReady=false;
+    fbStatus="Couldn't load Firebase. If the address starts with file://, run this from a local server instead.";
+    fbRefreshStatus();
+  }
+}
+function fbWrite(entry){ if(fbReady&&fbDB){ try{ fbDB.ref('feedback/'+entry.id).set(entry); }catch(e){} } }
+function fbRemove(id){ if(fbReady&&fbDB){ try{ fbDB.ref('feedback/'+id).remove(); }catch(e){} } }
+function sheetPush(action, entry){
+  if(!S.cfg.sheet) return;
+  try{ fetch(S.cfg.sheet,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,entry})}).catch(()=>{}); }catch(e){}
+}
+
+/* ============================================================
+   GEMINI — OCR + feedback
+   ============================================================ */
+function geminiEndpoint(){ return 'https://generativelanguage.googleapis.com/v1beta/models/'+(S.cfg.model||'gemini-2.5-flash')+':generateContent'; }
+async function geminiCall(parts, jsonMode){
+  if(!S.cfg.geminiKey) throw new Error('Add your Gemini API key in Settings first.');
+  const body={ contents:[{parts}], generationConfig:{ temperature: jsonMode?0.35:0.05 } };
+  if(jsonMode) body.generationConfig.responseMimeType='application/json';
+  let res;
+  try{
+    res=await fetch(geminiEndpoint(),{ method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':S.cfg.geminiKey}, body:JSON.stringify(body) });
+  }catch(e){ throw new Error('Network error reaching Gemini. Check your connection, and run from a local server (not file://).'); }
+  if(!res.ok){
+    let detail=''; try{ const j=await res.json(); detail=(j.error&&j.error.message)||''; }catch(e){ try{ detail=(await res.text()).slice(0,200); }catch(_){} }
+    if(res.status===400 && /API key/i.test(detail)) throw new Error('Gemini rejected the API key. Re-check it in Settings.');
+    if(res.status===404) throw new Error('Model "'+(S.cfg.model)+'" was not found for this key. Try a different model name in Settings (free tier = Flash models).');
+    if(res.status===429) throw new Error('Rate limit reached on the free tier. Wait a minute and try again.');
+    throw new Error('Gemini error '+res.status+(detail?': '+detail:''));
+  }
+  const data=await res.json();
+  const cand=data.candidates&&data.candidates[0];
+  if(!cand){
+    if(data.promptFeedback&&data.promptFeedback.blockReason) throw new Error('The request was blocked ('+data.promptFeedback.blockReason+').');
+    throw new Error('Gemini returned no result.');
+  }
+  const txt=((cand.content&&cand.content.parts)||[]).map(p=>p.text||'').join('').trim();
+  if(!txt) throw new Error('Gemini returned an empty response — try again.');
+  return txt;
+}
+
+const OCR_PROMPT =
+`You are a precise OCR engine for handwritten English. Transcribe the handwriting in the image(s) into plain text exactly as written. Preserve line breaks and paragraph breaks. If several images are given, treat them as consecutive pages in order and separate pages with a blank line. Do NOT correct spelling, grammar, or punctuation. Do NOT add any commentary or labels. Return only the transcribed text.`;
+
+async function runOCR(images){
+  const parts=[{text:OCR_PROMPT}];
+  images.forEach(im=>parts.push({inline_data:{mime_type:im.mime, data:im.base64}}));
+  const t=await geminiCall(parts,false);
+  return t.trim();
+}
+
+function buildFeedbackPrompt(text, category){
+  const c=catOf(category);
+  const style=(c.style||'').trim();
+  return `${(S.cfg.guidelines||DEFAULT_GUIDELINES).trim()}
+
+CATEGORY: ${category}${style?`\nCATEGORY STYLE: ${style}`:''}
+
+Assess the writing on four rubrics and correct it:
+- grammar — grammatical correctness (tense, agreement, articles, prepositions, sentence structure).
+- clarity — how easily a reader understands each sentence (wordiness, ambiguity, awkward phrasing).
+- vocabulary — word choice, precision, register, and natural collocations.
+- coherence — logical flow and organisation across sentences and paragraphs (transitions, structure).
+Also fix spelling-level typos, tracked SEPARATELY as the "spelling" category.
+
+Produce a corrected version of the text, then break it into ordered SEGMENTS that reconstruct the corrected text exactly.
+- A segment of unchanged text has ONLY a "t" field.
+- A segment that represents a correction has "t" (the corrected phrase), "cat" (one of: grammar, clarity, vocabulary, coherence, spelling), "from" (the original phrase it replaced, "" if inserted), and "reason" (one plain-language sentence explaining the fix).
+- Keep each corrected segment as SHORT as possible — just the changed phrase — and put surrounding unchanged words in their own plain segments.
+- If one change could belong to several rubrics, tag it with the single most important one using this priority (highest first): grammar > coherence > clarity > vocabulary > spelling.
+- CRITICAL: concatenating every segment's "t" in order MUST exactly equal the corrected text, including all spaces, punctuation, and line breaks (use \\n for line breaks).
+
+Score each of the four rubrics from 0 to 100 (be fair and calibrated; a solid, minor-issues piece is ~80). For each rubric write 2–4 sentences of specific, category-appropriate feedback in the tutor voice described above. Write a 2–3 sentence overall summary that encourages the writer and names the top one or two priorities.
+
+Then choose 3–5 useful EXPRESSIONS to teach — pick phrases the writer actually used (or clearly meant) that a native speaker would phrase more naturally, favouring high-frequency, genuinely native-like language. For each expression give BOTH registers a native speaker would really use:
+- "spoken": the natural casual / conversational way to say it.
+- "written": the natural formal / written way to say it.
+Also give related expressions so the writer can build a word family:
+- "similar": 2–3 near-synonyms or alternative phrasings.
+- "opposite": 1–3 antonyms or contrasting expressions (use [] if none make sense).
+- "note": one short sentence on nuance or when to use which register.
+Keep every expression natural and idiomatic — no textbook stiffness.
+
+Respond with ONLY a JSON object, no markdown, in exactly this shape:
+{
+  "corrected": "string",
+  "segments": [ {"t":"..."}, {"t":"...","cat":"grammar","from":"...","reason":"..."} ],
+  "scores": {"grammar":0,"clarity":0,"vocabulary":0,"coherence":0},
+  "rubrics": {"grammar":"...","clarity":"...","vocabulary":"...","coherence":"..."},
+  "summary": "...",
+  "expressions": [ {"phrase":"...","spoken":"...","written":"...","similar":["...","..."],"opposite":["..."],"note":"..."} ]
+}
+
+TEXT TO REVIEW:
+"""
+${text}
+"""`;
+}
+
+function parseFeedbackJSON(raw){
+  let s=raw.trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
+  let obj;
+  try{ obj=JSON.parse(s); }
+  catch(e){
+    const a=s.indexOf('{'), b=s.lastIndexOf('}');
+    if(a>=0&&b>a){ obj=JSON.parse(s.slice(a,b+1)); } else throw new Error('Could not read the feedback (invalid format). Try again.');
+  }
+  const scores={}; SCORE_KEYS.forEach(k=>scores[k]=clamp(Math.round(+((obj.scores||{})[k])||0),0,100));
+  let segments=Array.isArray(obj.segments)?obj.segments.filter(x=>x&&typeof x.t==='string'):[];
+  segments.forEach(x=>{ if(x.cat && !CATSET.has(x.cat)) delete x.cat; });
+  let corrected=typeof obj.corrected==='string'?obj.corrected:'';
+  if(!segments.length && corrected) segments=[{t:corrected}];
+  if(!corrected && segments.length) corrected=segments.map(s=>s.t).join('');
+  const rubrics=obj.rubrics&&typeof obj.rubrics==='object'?obj.rubrics:{};
+  const asArr=v=>Array.isArray(v)?v.map(x=>String(x)).filter(Boolean):[];
+  const expressions=(Array.isArray(obj.expressions)?obj.expressions:[])
+    .filter(x=>x&&(x.phrase||x.spoken||x.written))
+    .map(x=>({ phrase:String(x.phrase||''), spoken:String(x.spoken||''), written:String(x.written||''),
+      similar:asArr(x.similar), opposite:asArr(x.opposite), note:String(x.note||'') }))
+    .slice(0,6);
+  return { corrected, segments, scores,
+    rubrics:{ grammar:rubrics.grammar||'', clarity:rubrics.clarity||'', vocabulary:rubrics.vocabulary||'', coherence:rubrics.coherence||'' },
+    summary: typeof obj.summary==='string'?obj.summary:'', expressions };
+}
+
+async function runFeedback(text, category){
+  const raw=await geminiCall([{text:buildFeedbackPrompt(text,category)}], true);
+  return parseFeedbackJSON(raw);
+}
+
+/* image compression */
+function compressImage(file, maxDim=1568, quality=0.72){
+  return new Promise((resolve,reject)=>{
+    if(!/^image\//.test(file.type)){ reject(new Error('That file is not an image.')); return; }
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.naturalWidth, h=img.naturalHeight;
+      const scale=Math.min(1, maxDim/Math.max(w,h));
+      w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      let dataUrl; try{ dataUrl=cv.toDataURL('image/jpeg',quality); }catch(e){ reject(new Error('Could not process that image.')); return; }
+      resolve({ id:uid(), dataUrl, base64:dataUrl.split(',')[1], mime:'image/jpeg' });
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Could not open that image.')); };
+    img.src=url;
+  });
+}
+
+/* ============================================================
+   WRITE flow state
+   ============================================================ */
+const MAX_IMAGES=5;
+let W = { mode:'photo', phase:'idle', images:[], text:'', original:'', result:null, error:'', step:'' };
+let curResult=null; // result currently shown (write or history detail)
+function resetWrite(){ W={ mode:W.mode, phase:'idle', images:[], text:'', original:'', result:null, error:'', step:'' }; }
+
+async function addFiles(fileList){
+  const files=Array.from(fileList||[]);
+  if(!files.length) return;
+  const room=MAX_IMAGES-W.images.length;
+  if(room<=0){ toast('Up to '+MAX_IMAGES+' photos','📸'); return; }
+  const take=files.slice(0,room);
+  for(const f of take){
+    try{ const im=await compressImage(f); W.images.push(im); }
+    catch(e){ toast(e.message||'Skipped an image'); }
+  }
+  if(files.length>room) toast('Added '+room+' — limit is '+MAX_IMAGES,'📸');
+  renderWrite();
+}
+
+async function analyze(){
+  if(!S.cfg.geminiKey){ toast('Add your Gemini key in Settings','🔑'); S.ui.tab='settings'; render(); return; }
+  let text='';
+  if(W.mode==='type'){
+    text=(el('type-input')?el('type-input').value:W.text||'').trim();
+    if(text.length<2){ toast('Type a little more first','✍️'); return; }
+    W.text=text;
+  } else {
+    if(!W.images.length){ toast('Add at least one photo','📸'); return; }
+  }
+  W.error=''; W.result=null;
+  try{
+    if(W.mode!=='type'){
+      W.phase='ocr'; W.step='Reading your handwriting…'; renderWrite();
+      text=await runOCR(W.images);
+      if(!text || text.length<2) throw new Error('No readable text was found in the photos.');
+      W.original=text;
+    } else { W.original=text; }
+    W.phase='feedback'; W.step='Reviewing your writing…'; renderWrite();
+    const result=await runFeedback(text, S.lastCat);
+    finishAnalysis(result);
+  }catch(e){
+    W.phase='idle'; W.error=e.message||'Something went wrong.'; renderWrite();
+  }
+}
+
+async function reanalyze(){
+  const edited=(el('orig-edit')?el('orig-edit').value:W.original).trim();
+  if(edited.length<2){ toast('The text is empty','✍️'); return; }
+  W.original=edited; W.error='';
+  W.phase='feedback'; W.step='Reviewing your writing…'; renderWrite();
+  try{
+    const cat=(W.result&&W.result.category)||S.lastCat;
+    const result=await runFeedback(edited, cat);
+    applyResult(result, W.result);              // update the SAME entry — no duplicates
+  }
+  catch(e){ W.phase='result'; toast(e.message||'Could not re-run','⚠️'); render(); }
+}
+
+function finishAnalysis(result){ applyResult(result, null); }
+
+function applyResult(result, existing){
+  const now=Date.now();
+  const isNew=!existing;
+  let entry;
+  if(existing){
+    entry=existing;
+    Object.assign(entry,{ original:W.original, corrected:result.corrected, segments:result.segments,
+      scores:result.scores, rubrics:result.rubrics, summary:result.summary, expressions:result.expressions,
+      updatedAt:now, saved:false });
+  } else {
+    entry={ id:uid(), category:S.lastCat, date:now, updatedAt:now, saved:false,
+      original:W.original, corrected:result.corrected, segments:result.segments,
+      scores:result.scores, rubrics:result.rubrics, summary:result.summary, expressions:result.expressions };
+    S.entries.unshift(entry); touchStreak();
+  }
+  W.result=entry; W.phase='result'; curResult=entry;
+  if(isNew){ commitEntry(entry, true); }        // first time → save to BOTH automatically
+  else { putEntry(entry); render(); toast('Re-analysed · tap Save to update your records','✨'); }
+}
+
+/* local + Firebase (keeps in-app history current on every device) */
+function putEntry(entry){ save(); fbWrite(entry); }
+
+/* Save button → write to Firebase AND Google Sheets at the same time */
+function commitEntry(entry, fromAuto){
+  entry.saved=true; entry.updatedAt=Date.now();
+  save(); fbWrite(entry); sheetPush('save', entry);          // FIREBASE + SHEETS together
+  if(W.result && W.result.id===entry.id) W.result=entry;
+  curResult=entry;
+  refreshResultUI();
+  toast(S.cfg.sheet ? 'Saved to Firebase & Sheets' : 'Saved to history · add a Sheet in Settings to log it too',
+        S.cfg.sheet?'✅':'💾');
+}
+/* re-render whichever result surface is showing */
+function refreshResultUI(){
+  const ov=el('overlay-root');
+  const open=ov && ov.querySelector && ov.querySelector('.overlay');
+  if(open && curResult){
+    const body=ov.querySelector('.ovbody');
+    if(body){ body.innerHTML=resultView(curResult,true); bindResult(); }
+  } else { render(); }
+}
+
+/* ============================================================
+   RENDER — router
+   ============================================================ */
+function render(){
+  applyChrome(); renderTabbar(); renderTopbar();
+  const v=el('view'), t=S.ui.tab;
+  if(t==='write') v.innerHTML=`<div class="content">${viewWrite()}</div>`;
+  else if(t==='history') v.innerHTML=`<div class="content">${viewHistory()}</div>`;
+  else if(t==='insights') v.innerHTML=`<div class="content">${viewInsights()}</div>`;
+  else if(t==='settings') v.innerHTML=`<div class="content">${viewSettings()}</div>`;
+  bindView();
+}
+function renderTabbar(){
+  const tabs=[['write','Write',I.pen],['history','History',I.book],['insights','Insights',I.chart],['settings','Settings',I.gear]];
+  el('tabbar').innerHTML=`<div class="nav-brand"><span class="brand-dot"></span>English Writing Feedback</div>`+tabs.map(([id,label,icon])=>`
+    <button class="tab ${S.ui.tab===id?'active':''}" data-tab="${id}"><span class="tabicon">${icon}</span><span>${label}</span></button>`).join('');
+}
+function renderTopbar(){
+  const titles={
+    write:['English Writing Feedback','Photograph your writing, get feedback'],
+    history:['History',`${S.entries.length} piece${S.entries.length===1?'':'s'} reviewed`],
+    insights:['Insights','How your writing is trending'],
+    settings:['Settings','Keys, rubric guidance & sync']
+  };
+  const [h,sub]=titles[S.ui.tab];
+  const flame=S.game.streak>0?`<div class="chip on" style="background:var(--flame);gap:.3rem">🔥 ${S.game.streak}</div>`:'';
+  el('topbar').className='topbar'+(S.ui.tab==='history'?' bordered':'');
+  el('topbar').innerHTML=`<div><h1>${S.ui.tab==='write'?'<span class="brand-dot"></span>':''}${h}</h1><div class="sub">${sub}</div></div>${flame}`;
+}
+
+/* ---------- WRITE ---------- */
+function catChips(){
+  return S.cats.map(c=>`<button class="chip cat-chip ${S.lastCat===c.name?'on':''}" data-cat="${esc(c.name)}"
+    style="${S.lastCat===c.name?`background:${c.color}`:''}"><span>${c.emoji}</span>${esc(c.name)}</button>`).join('')
+    + `<button class="chip" data-action="add-cat">${I.plus}New</button>`;
+}
+function viewWrite(){
+  if(W.phase==='result' && W.result) return resultView(W.result, false);
+  if(W.phase==='ocr'||W.phase==='feedback') return processingView();
+
+  const keyMissing = !S.cfg.geminiKey;
+  const noteKey = keyMissing ? `<div class="notice"><span>🔑</span><div>Add your <b>Gemini API key</b> in <a data-goto="settings">Settings</a> to turn photos into feedback. It stays in this browser only.</div></div>` : '';
+  const err = W.error ? `<div class="notice err"><span>⚠️</span><div>${esc(W.error)}</div></div>` : '';
+
+  let capture;
+  if(W.mode==='type'){
+    capture=`<textarea class="area" id="type-input" placeholder="Type or paste your English writing here…">${esc(W.text)}</textarea>`;
+  } else if(W.images.length===0){
+    capture=`
+      <div class="drop">
+        <div class="ic">${I.camera}</div>
+        <h4>Add your handwriting</h4>
+        <p>Snap a photo or upload up to ${MAX_IMAGES} pages. Images are shrunk on your device before they're sent.</p>
+        <div class="caprow">
+          <button class="btn" id="btn-cam">${I.camera}Take photo</button>
+          <button class="btn ghost" id="btn-up">${I.upload}Upload</button>
+        </div>
+      </div>`;
+  } else {
+    const thumbs=W.images.map((im,i)=>`
+      <div class="thumb"><img src="${im.dataUrl}" alt="page ${i+1}">
+        <button class="rm" data-rm="${im.id}" aria-label="Remove">${I.x}</button>
+        <span class="pg">${i+1}</span></div>`).join('');
+    const addTile=W.images.length<MAX_IMAGES?`<button class="thumb add" id="btn-more">${I.plus}</button>`:'';
+    capture=`<div class="thumbs">${thumbs}${addTile}</div>
+      <div class="caprow" style="max-width:none;margin-bottom:.2rem">
+        <button class="btn ghost" id="btn-cam">${I.camera}Camera</button>
+        <button class="btn ghost" id="btn-up">${I.upload}Upload</button>
+      </div>`;
+  }
+
+  const canGo = W.mode==='type' ? true : W.images.length>0;
+  const analyzeBtn = `<button class="btn" id="btn-analyze" ${canGo?'':'disabled'} style="margin-top:1.1rem">${I.spark}Get feedback</button>`;
+
+  return `
+    ${noteKey}${err}
+    <div class="segmode" id="mode-seg">
+      <button data-mode="photo" class="${W.mode==='photo'?'on':''}">${I.camera}Photo</button>
+      <button data-mode="type" class="${W.mode==='type'?'on':''}">${I.type}Type</button>
+    </div>
+    <div class="field"><label>Category</label><div class="filterrow">${catChips()}</div></div>
+    ${capture}
+    ${analyzeBtn}
+    <input type="file" id="file-up" accept="image/*" multiple hidden>
+    <input type="file" id="file-cam" accept="image/*" capture="environment" hidden>
+    <p style="text-align:center;color:var(--ink-soft);font-size:.8rem;font-weight:600;margin:1rem .3rem 0">
+      Feedback is saved automatically to your history${S.cfg.sheet?' and study sheet':''}.</p>`;
+}
+function processingView(){
+  const ocrDone=W.phase==='feedback';
+  const s1=W.mode==='type'?'done':(ocrDone?'done':'active');
+  const s2=W.phase==='feedback'?'active':'';
+  const skipOCR=W.mode==='type';
+  return `
+    <div class="proc">
+      <div class="spinner"></div>
+      <h3 style="font-weight:800;font-size:1.2rem">${esc(W.step||'Working…')}</h3>
+      <p style="color:var(--ink-soft);font-size:.9rem;margin-top:.4rem">This usually takes a few seconds.</p>
+      <div class="procsteps">
+        ${skipOCR?'':`<div class="pstep ${s1}"><span class="dot">${ocrDone?'✓':'1'}</span>Reading handwriting</div>`}
+        <div class="pstep ${s2||(skipOCR?'active':'')}"><span class="dot">${skipOCR?'1':'2'}</span>Reviewing four rubrics</div>
+      </div>
+    </div>`;
+}
+
+/* ---------- RESULT (shared by write + history) ---------- */
+function correctedHTML(segments){
+  if(!Array.isArray(segments)||!segments.length) return '';
+  return segments.map((s,i)=>{
+    const t=esc(s.t==null?'':s.t);
+    if(s.cat && CATSET.has(s.cat)) return `<mark class="hl hl-${s.cat}" data-i="${i}">${t}</mark>`;
+    return t;
+  }).join('');
+}
+function legendHTML(){
+  return `<div class="legend">`+PRIORITY.map(k=>`<span class="legchip"><span class="legdot" style="background:var(${RUBRICS[k].v})"></span>${RUBRICS[k].label}</span>`).join('')+`</div>`;
+}
+function scoreBars(scores){
+  return SCORE_KEYS.map(k=>{
+    const v=clamp(Math.round(scores[k]||0),0,100), r=RUBRICS[k];
+    return `<div class="scorebar"><div class="sb-top"><span class="sb-dot" style="background:var(${r.v})"></span>
+      <span class="sb-l">${r.label}</span><span class="sb-v">${v}</span></div>
+      <div class="sb-track"><i style="width:${v}%;background:var(${r.v})"></i></div></div>`;
+  }).join('');
+}
+function rubricCards(r, scores){
+  return SCORE_KEYS.map(k=>{
+    if(!r[k]) return '';
+    return `<div class="rubcard" style="--rc:var(${RUBRICS[k].v})"><div class="rh"><span class="sb-dot" style="background:var(${RUBRICS[k].v})"></span>
+      <span class="name">${RUBRICS[k].label}</span><span class="sc">${clamp(Math.round(scores[k]||0),0,100)}/100</span></div>
+      <p>${esc(r[k])}</p></div>`;
+  }).join('');
+}
+function typosOf(segments){ return (segments||[]).filter(s=>s.cat==='spelling'); }
+function expressionsHTML(list){
+  if(!Array.isArray(list)||!list.length) return '';
+  return list.map(x=>{
+    const rel=[];
+    if(x.similar&&x.similar.length) rel.push(`<div class="relrow"><span class="rk sim">Similar</span><span class="rv">${x.similar.map(esc).join(' · ')}</span></div>`);
+    if(x.opposite&&x.opposite.length) rel.push(`<div class="relrow"><span class="rk opp">Opposite</span><span class="rv">${x.opposite.map(esc).join(' · ')}</span></div>`);
+    return `<div class="expcard">
+      ${x.phrase?`<div class="expphrase">${esc(x.phrase)}</div>`:''}
+      <div class="regrow"><span class="rtag spoken">🗣 Spoken</span><span class="rtxt">${esc(x.spoken||'—')}</span></div>
+      <div class="regrow"><span class="rtag written">✍️ Written</span><span class="rtxt">${esc(x.written||'—')}</span></div>
+      ${rel.join('')}
+      ${x.note?`<div class="expnote">${esc(x.note)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function saveBarHTML(entry){
+  const saved=!!entry.saved;
+  const where = S.cfg.sheet ? 'Firebase & Sheets' : 'your history';
+  return `<div class="savebar">
+    <span class="savestate ${saved?'on':''}">${saved?I.check+' Saved to '+where:'Not saved yet'}</span>
+    <button class="btn ${saved?'soft':''}" id="btn-save" style="width:auto;padding:.7rem 1.1rem">${I.save}${saved?'Save again':'Save'}</button>
+  </div>`;
+}
+function resultView(entry, inOverlay){
+  const c=catOf(entry.category);
+  const ov=overallOf(entry.scores);
+  const typos=typosOf(entry.segments);
+  const editable = !inOverlay; // on the Write tab you can fix OCR and re-run
+  const origBlock = editable
+    ? `<textarea class="origedit serif" id="orig-edit" spellcheck="false">${esc(entry.original)}</textarea>
+       <div class="row2" style="margin-top:.6rem"><button class="btn soft" id="btn-rerun">${I.spark}Re-run on edits</button></div>`
+    : `<div class="textcard serif">${esc(entry.original)}</div>`;
+  const exprs=expressionsHTML(entry.expressions);
+  const actions = `
+    ${saveBarHTML(entry)}
+    <div class="row2" style="margin:.1rem 0 1.1rem">
+      <button class="btn ghost" id="btn-copy">${I.copy}Copy corrected</button>
+      ${inOverlay?'':`<button class="btn ghost" id="btn-new">${I.pen}New</button>`}
+    </div>`;
+  return `
+    <div class="resulthead">
+      <div class="meta"><span class="cat-badge" style="background:${c.color}1f;color:${c.color}">${c.emoji} ${esc(entry.category)}</span>${fmtDate(entry.date)}</div>
+      <div class="overall"><span class="n">${ov}</span><span class="k">Overall</span></div>
+    </div>
+    ${actions}
+    <div class="sec"><div class="sec-h">Scores</div><div class="scores">${scoreBars(entry.scores)}</div></div>
+    <div class="sec">
+      <div class="sec-h">Corrected <span class="mini">tap a highlight for the reason</span></div>
+      <div class="textcard serif">${correctedHTML(entry.segments)||esc(entry.corrected)}</div>
+      ${legendHTML()}
+    </div>
+    ${typos.length?`<div class="sec"><div class="sec-h">Spelling &amp; typos <span class="mini">${typos.length}</span></div>
+      <div class="typolist">${typos.map((s,i)=>`<div class="typorow" data-typo="${entry.segments.indexOf(s)}"><span class="f">${esc(s.from||'—')}</span><span class="arw">→</span><span class="t">${esc(s.t)}</span></div>`).join('')}</div></div>`:''}
+    <div class="sec"><div class="sec-h">Original</div>${origBlock}</div>
+    <div class="sec"><div class="sec-h">Detailed feedback</div>${rubricCards(entry.rubrics, entry.scores)}</div>
+    ${exprs?`<div class="sec"><div class="sec-h">Expressions to borrow <span class="mini">spoken &amp; written</span></div>${exprs}</div>`:''}
+    ${entry.summary?`<div class="sec"><div class="sec-h">Summary</div><div class="summary">${esc(entry.summary)}</div></div>`:''}`;
+}
+
+/* ---------- HISTORY ---------- */
+function filteredEntries(){
+  let list=S.entries.slice();
+  if(S.ui.filter==='Saved') list=list.filter(e=>e.saved);
+  else if(S.ui.filter!=='All') list=list.filter(e=>e.category===S.ui.filter);
+  const q=S.ui.q.trim().toLowerCase();
+  if(q) list=list.filter(e=>(e.original||'').toLowerCase().includes(q)||(e.corrected||'').toLowerCase().includes(q)||(e.summary||'').toLowerCase().includes(q));
+  list.sort((a,b)=>b.date-a.date);
+  return list;
+}
+function viewHistory(){
+  if(S.entries.length===0) return emptyState('📚','No feedback yet','Head to Write, photograph a page of your English, and your reviewed pieces will collect here.');
+  const catRow=['All','Saved'].concat(S.cats.map(c=>c.name)).map(f=>{
+    const on=S.ui.filter===f;
+    const c=(f==='All'||f==='Saved')?null:catOf(f);
+    const lead=f==='Saved'?'⭐ ':(c?c.emoji+' ':'');
+    return `<button class="chip ${on?'on':''}" data-filter="${esc(f)}" style="${on?(c?`background:${c.color}`:'background:var(--primary)'):''}">${lead}${esc(f)}</button>`;
+  }).join('');
+  const list=filteredEntries();
+  const rows=list.length?list.map(historyRow).join(''):`<div class="empty" style="padding:2.5rem 1rem"><p>Nothing matches this view.</p></div>`;
+  return `
+    <div class="searchwrap">${I.search}<input class="search" id="h-search" placeholder="Search your writing" value="${esc(S.ui.q)}" autocomplete="off"></div>
+    <div class="filterrow">${catRow}</div>
+    <div id="h-list">${rows}</div>`;
+}
+function historyRow(e){
+  const c=catOf(e.category), ov=overallOf(e.scores);
+  const dots=PRIORITY.filter(k=>k!=='spelling'||typosOf(e.segments).length).slice(0,5)
+    .map(k=>`<span class="rdot" style="background:var(${RUBRICS[k].v})"></span>`).join('');
+  return `
+    <div class="hentry" style="--catc:${c.color}" data-open="${e.id}">
+      <div class="htop"><span class="cat-badge" style="background:${c.color}1f;color:${c.color}">${c.emoji} ${esc(e.category)}</span>
+        <span style="display:flex;align-items:center;gap:.4rem">${e.saved?`<span class="savedbadge">${I.check}Saved</span>`:''}<span class="ovpill">${ov}</span></span></div>
+      <div class="snip">${esc((e.original||e.corrected||'').slice(0,160))}</div>
+      <div class="hfoot"><span class="dots">${dots}</span><span class="date">${fmtDate(e.date)}</span></div>
+    </div>`;
+}
+function emptyState(emoji,title,text){ return `<div class="empty"><div class="emoji">${emoji}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`; }
+
+/* ---------- INSIGHTS ---------- */
+function viewInsights(){
+  if(S.entries.length===0) return emptyState('📈','Nothing to chart yet','Once you review a few pieces, your rubric averages and score trend will appear here.');
+  const list=S.entries.slice().sort((a,b)=>a.date-b.date);
+  const n=list.length;
+  const avg={}; SCORE_KEYS.forEach(k=>avg[k]=Math.round(list.reduce((a,e)=>a+(+(e.scores||{})[k]||0),0)/n));
+  const avgOverall=Math.round(SCORE_KEYS.reduce((a,k)=>a+avg[k],0)/SCORE_KEYS.length);
+  const weekAgo=Date.now()-7*864e5;
+  const thisWeek=list.filter(e=>e.date>=weekAgo).length;
+  const g=S.game;
+  const series=list.slice(-12).map(e=>overallOf(e.scores));
+  return `
+    <div class="streakcard"><div class="flame">🔥</div>
+      <div><div class="n">${g.streak}</div><div class="lbl">day streak</div></div>
+      <div class="r">Best ${g.best}<br>${n} reviewed</div></div>
+    <div class="statrow">
+      <div class="stat"><div class="v">${avgOverall}</div><div class="k">Avg overall</div></div>
+      <div class="stat"><div class="v">${thisWeek}</div><div class="k">This week</div></div>
+      <div class="stat"><div class="v">${n}</div><div class="k">Total</div></div>
+    </div>
+    <div class="trend"><div class="sec-h" style="margin:0">Overall score · last ${series.length}</div>${sparkline(series)}</div>
+    <div class="scores">${scoreBars(avg)}</div>
+    <p style="text-align:center;color:var(--ink-soft);font-size:.8rem;font-weight:600;margin:1rem .3rem 0">Averages across all ${n} reviewed pieces.</p>`;
+}
+function sparkline(vals){
+  if(!vals.length) return '';
+  const W2=600,H=120,pad=14, max=100,min=Math.min(40,Math.min.apply(null,vals)-5);
+  const rng=Math.max(1,max-min);
+  const step=vals.length>1?(W2-pad*2)/(vals.length-1):0;
+  const pts=vals.map((v,i)=>{ const x=pad+step*i; const y=H-pad-((v-min)/rng)*(H-pad*2); return [x,y]; });
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${H-pad} L ${pts[0][0].toFixed(1)} ${H-pad} Z`;
+  const dots=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--primary)"/>`).join('');
+  return `<svg viewBox="0 0 ${W2} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="sp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--primary)" stop-opacity=".22"/><stop offset="1" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#sp)"/><path d="${line}" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+}
+
+/* ---------- SETTINGS ---------- */
+function viewSettings(){
+  const st=S.settings;
+  const gkOn=!!S.cfg.geminiKey, fbOn=!!S.cfg.firebase&&fbReady, shOn=!!S.cfg.sheet;
+  return `
+    <div class="setgroup">
+      <div class="gh">Display</div>
+      <div class="setrow"><div><div class="l">Text size</div><div class="d">Bigger is easier from a distance</div></div>
+        <div class="seg segA" id="fs-seg">
+          <button data-fs="sm" class="${st.fs==='sm'?'on':''}" style="font-size:.75rem">A</button>
+          <button data-fs="md" class="${st.fs==='md'?'on':''}" style="font-size:.95rem">A</button>
+          <button data-fs="lg" class="${st.fs==='lg'?'on':''}" style="font-size:1.15rem">A</button>
+          <button data-fs="xl" class="${st.fs==='xl'?'on':''}" style="font-size:1.35rem">A</button>
+        </div></div>
+      <div class="setrow"><div><div class="l">Dark mode</div><div class="d">Easy on the eyes at night</div></div>
+        <button class="switch ${st.theme==='dark'?'on':''}" id="sw-theme"><i></i></button></div>
+    </div>
+
+    <div class="setgroup">
+      <div class="gh">Gemini</div>
+      ${BAKED_KEY ? `
+      <div class="setrow"><div><div class="l">API key</div><div class="d">Provided by this deployment (from your GitHub secret) — not shown here.</div></div>
+        <span class="synced on">● Set</span></div>` : `
+      <div class="setrow col">
+        <div style="display:flex;justify-content:space-between;align-items:center;width:100%"><div class="l">API key</div>
+          <span class="synced ${gkOn?'on':'off'}">${gkOn?'● Set':'○ Off'}</span></div>
+        <div class="d" style="margin:.15rem 0 .6rem">From Google AI Studio (free tier works). Stored only in this browser — never uploaded.</div>
+        <input class="miniinput" id="cfg-key" type="password" placeholder="AQ.…" value="${esc(S.cfg.geminiKey)}" autocomplete="off">
+      </div>`}
+      <div class="setrow col">
+        <div class="l">Model${BAKED_MODEL?' <span class="synced on" style="margin-left:.4rem">deployment</span>':''}</div>
+        <div class="d" style="margin:.15rem 0 .6rem">Free tier supports Flash (vision) models. Change this if you get a "model not found" error, e.g. to the newest Flash you can access.</div>
+        <input class="miniinput" id="cfg-model" placeholder="gemini-2.5-flash" value="${esc(S.cfg.model)}" ${BAKED_MODEL?'disabled':''} autocomplete="off">
+      </div>
+    </div>
+
+    <div class="setgroup">
+      <div class="gh">Feedback guidance</div>
+      <div class="setrow col">
+        <div class="l">Core instructions to the tutor</div>
+        <div class="d" style="margin:.15rem 0 .6rem">These are sent to Gemini with every review. The four rubric definitions and the JSON format are added automatically.</div>
+        <textarea class="miniinput" id="cfg-guide" rows="6">${esc(S.cfg.guidelines)}</textarea>
+        <div class="row2" style="margin-top:.6rem"><button class="btn ghost" id="btn-guide-reset" style="width:auto;padding:.6rem 1rem">Reset to default</button></div>
+      </div>
+    </div>
+
+    <div class="setgroup">
+      <div class="gh">Categories</div>
+      <div class="setrow col"><div class="l">Your categories</div>
+        <div class="filterrow" id="cat-manage">
+          ${S.cats.map(c=>`<button class="chip on" data-editcat="${esc(c.name)}" style="background:${c.color}">${c.emoji} ${esc(c.name)}</button>`).join('')}
+          <button class="chip" data-action="add-cat">${I.plus}New</button>
+        </div>
+        <div class="d" style="margin-top:.5rem">Tap a category to rename it, change its emoji, or edit the tone Gemini should use for it.</div>
+      </div>
+    </div>
+
+    <div class="setgroup">
+      <div class="gh">Your data</div>
+      <div class="setrow"><div><div class="l">Export backup</div><div class="d">All feedback as a JSON file</div></div>
+        <button class="btn ghost" style="width:auto;padding:.7rem 1rem" id="btn-export">Export</button></div>
+      <div class="setrow"><div><div class="l">Import backup</div><div class="d">Restore from a JSON file</div></div>
+        <button class="btn ghost" style="width:auto;padding:.7rem 1rem" id="btn-import">Import</button></div>
+      <div class="setrow"><div><div class="l" style="color:var(--red)">Clear history</div><div class="d">Deletes reviews on this device</div></div>
+        <button class="btn ghost" style="width:auto;padding:.7rem 1rem;color:var(--red)" id="btn-clear">Clear</button></div>
+    </div>
+    <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:.5rem 0 .3rem">
+      Sync · History ${fbOn?'●':(S.cfg.firebase?'◌':'○')} ${fbOn?'on':(S.cfg.firebase?'connecting…':'off')} · Sheet ${shOn?'● on':'○ off'}</p>
+    <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:0 0 1rem">
+      English Writing Feedback · ${hasLS?'Saved on this device':'\u26A0 Private mode — data will not persist here. Run from a local server.'}</p>`;
+}
+
+const APPS_SCRIPT =
+`function doPost(e){
+  var lock = LockService.getScriptLock();
+  lock.tryLock(30000);
+  try{
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Feedback') || ss.insertSheet('Feedback');
+    var HEAD = ['ID','Date','Category','Original','Corrected',
+      'Grammar','Clarity','Vocabulary','Coherence','Overall','Edits','Expressions','Summary'];
+    if(sheet.getLastRow() === 0){ sheet.appendRow(HEAD); }
+
+    var body = JSON.parse(e.postData.contents);
+    var en = body.entry || {};
+    var s = en.scores || {};
+    var g=+s.grammar||0, c=+s.clarity||0, v=+s.vocabulary||0, co=+s.coherence||0;
+    var overall = Math.round((g+c+v+co)/4);
+    var edits = (en.segments||[]).filter(function(x){return x && x.cat;}).length;
+    var expr = (en.expressions||[]).map(function(x){
+      var w = x.written||x.spoken||'';
+      var sp = x.spoken && x.written ? ' | spoken: '+x.spoken : '';
+      return (x.phrase? x.phrase+' -> ':'') + w + sp;
+    }).join('\\n');
+
+    var row = [ en.id||'', new Date(en.date||Date.now()), en.category||'',
+      en.original||'', en.corrected||'', g, c, v, co, overall, edits, expr, en.summary||'' ];
+
+    // upsert by ID (column 1): update the same row if this feedback was saved before
+    var id = en.id||'';
+    var updated = false;
+    if(id && sheet.getLastRow() > 1){
+      var ids = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
+      for(var i=0;i<ids.length;i++){
+        if(String(ids[i][0]) === String(id)){
+          sheet.getRange(i+2,1,1,row.length).setValues([row]);
+          updated = true; break;
+        }
+      }
+    }
+    if(!updated) sheet.appendRow(row);
+
+    return ContentService.createTextOutput(JSON.stringify({ok:true,updated:updated}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }catch(err){
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:String(err)}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }finally{ lock.releaseLock(); }
+}`;
+
+/* ============================================================
+   BIND
+   ============================================================ */
+function bindView(){
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ S.ui.tab=b.dataset.tab; render(); el('view').scrollTo(0,0); });
+  document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{ S.ui.tab=b.dataset.goto; render(); });
+  document.querySelectorAll('[data-action="add-cat"]').forEach(b=>b.onclick=openAddCat);
+  const t=S.ui.tab;
+  if(t==='write') bindWrite();
+  else if(t==='history') bindHistory();
+  else if(t==='settings') bindSettings();
+}
+function renderWrite(){ if(S.ui.tab==='write'){ el('view').innerHTML=`<div class="content">${viewWrite()}</div>`; bindWrite(); } }
+
+function bindWrite(){
+  document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{ S.ui.tab=b.dataset.goto; render(); });
+  document.querySelectorAll('[data-action="add-cat"]').forEach(b=>b.onclick=openAddCat);
+  document.querySelectorAll('.cat-chip').forEach(c=>c.onclick=()=>{ S.lastCat=c.dataset.cat; save(); if(W.phase==='idle') renderWrite(); });
+  document.querySelectorAll('#mode-seg button').forEach(b=>b.onclick=()=>{
+    if(W.mode==='type'){ const ta=el('type-input'); if(ta) W.text=ta.value; }
+    W.mode=b.dataset.mode; W.error=''; renderWrite();
+  });
+  const up=el('file-up'), cam=el('file-cam');
+  if(up) up.onchange=()=>{ addFiles(up.files); up.value=''; };
+  if(cam) cam.onchange=()=>{ addFiles(cam.files); cam.value=''; };
+  const bUp=el('btn-up'), bCam=el('btn-cam'), bMore=el('btn-more');
+  if(bUp) bUp.onclick=()=>up&&up.click();
+  if(bCam) bCam.onclick=()=>cam&&cam.click();
+  if(bMore) bMore.onclick=()=>up&&up.click();
+  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ W.images=W.images.filter(im=>im.id!==b.dataset.rm); renderWrite(); });
+  const an=el('btn-analyze'); if(an) an.onclick=analyze;
+  const tin=el('type-input'); if(tin) tin.oninput=()=>{ W.text=tin.value; };
+  bindResult();     // result-screen buttons (save / copy / new / rerun / highlights)
+}
+function bindResult(){
+  document.querySelectorAll('.hl').forEach(m=>m.onclick=()=>{
+    const i=+m.dataset.i; if(curResult&&curResult.segments&&curResult.segments[i]) openSpanDetail(curResult.segments[i]);
+  });
+  document.querySelectorAll('[data-typo]').forEach(r=>r.onclick=()=>{
+    const i=+r.dataset.typo; if(curResult&&curResult.segments&&curResult.segments[i]) openSpanDetail(curResult.segments[i]);
+  });
+  const sv=el('btn-save'); if(sv) sv.onclick=()=>{ if(curResult) commitEntry(curResult); };
+  const cp=el('btn-copy'); if(cp) cp.onclick=()=>{ if(curResult) copyText(curResult.corrected); };
+  const nw=el('btn-new'); if(nw) nw.onclick=()=>{ resetWrite(); renderWrite(); };
+  const rn=el('btn-rerun'); if(rn) rn.onclick=reanalyze;
+}
+function copyText(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('Copied','📋'),()=>toast('Could not copy')); }
+  else { try{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Copied','📋'); }catch(e){ toast('Could not copy'); } }
+}
+
+function bindHistory(){
+  const s=el('h-search'); if(s) s.oninput=()=>{ S.ui.q=s.value; refreshHistory(); };
+  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{ S.ui.filter=b.dataset.filter; render(); });
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openResult(b.dataset.open));
+}
+function refreshHistory(){
+  const list=filteredEntries();
+  const grid=el('h-list'); if(!grid) return;
+  grid.innerHTML=list.length?list.map(historyRow).join(''):`<div class="empty" style="padding:2.5rem 1rem"><p>Nothing matches this view.</p></div>`;
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openResult(b.dataset.open));
+}
+
+function bindSettings(){
+  document.querySelectorAll('#fs-seg button').forEach(b=>b.onclick=()=>{ S.settings.fs=b.dataset.fs; save(); applyChrome(); render(); });
+  const sw=el('sw-theme'); if(sw) sw.onclick=()=>{ S.settings.theme=S.settings.theme==='dark'?'light':'dark'; save(); applyChrome(); render(); };
+  const key=el('cfg-key'); if(key) key.onchange=()=>{ S.cfg.geminiKey=key.value.trim(); save(); };
+  const mdl=el('cfg-model'); if(mdl) mdl.onchange=()=>{ S.cfg.model=mdl.value.trim()||'gemini-2.5-flash'; save(); };
+  const guide=el('cfg-guide'); if(guide) guide.onchange=()=>{ S.cfg.guidelines=guide.value.trim()||DEFAULT_GUIDELINES; save(); toast('Guidance saved','📝'); };
+  const gr=el('btn-guide-reset'); if(gr) gr.onclick=()=>{ S.cfg.guidelines=DEFAULT_GUIDELINES; save(); render(); toast('Guidance reset','↩️'); };
+  document.querySelectorAll('[data-editcat]').forEach(b=>b.onclick=()=>openManageCat(b.dataset.editcat));
+  const ex=el('btn-export'); if(ex) ex.onclick=exportData;
+  const im=el('btn-import'); if(im) im.onclick=importData;
+  const cl=el('btn-clear'); if(cl) cl.onclick=()=>openConfirm('Clear history?','This deletes reviews saved on this device. Copies already sent to Firebase or your Sheet are not touched.','Clear',()=>{ S.entries=[]; save(); render(); toast('History cleared','🧹'); },true);
+}
+
+/* ============================================================
+   RESULT OVERLAY (history detail) + span detail
+   ============================================================ */
+function openResult(id){
+  const e=S.entries.find(x=>x.id===id); if(!e) return;
+  curResult=e;
+  const c=catOf(e.category);
+  el('overlay-root').innerHTML=`
+    <div class="overlay" id="ov">
+      <div class="ovhead">
+        <button class="iconbtn" id="ov-back">${I.back}</button>
+        <h2>${c.emoji} ${esc(e.category)}</h2>
+        <button class="iconbtn" id="ov-del" style="color:var(--red)">${I.trash}</button>
+      </div>
+      <div class="ovbody">${resultView(e,true)}</div>
+    </div>`;
+  el('ov-back').onclick=closeOverlay;
+  el('ov-del').onclick=()=>openConfirm('Delete this review?','It will be removed from your history and Firebase. Your Google Sheet log is kept.','Delete',()=>{
+    S.entries=S.entries.filter(x=>x.id!==id); save(); fbRemove(id); closeOverlay(); render(); toast('Deleted','🗑️');
+  },true);
+  bindResult();
+}
+function closeOverlay(){ el('overlay-root').innerHTML=''; curResult=(W.phase==='result'?W.result:null); }
+function openSpanDetail(seg){
+  const r=RUBRICS[seg.cat]||{label:'Change',v:'--primary'};
+  const wrap=sheetOverlay(`
+    <div class="spanhead"><span class="rubdot" style="background:var(${r.v})"></span>${r.label}</div>
+    <div class="ba">
+      <div class="ba-row"><span class="ba-k">Before</span><span class="ba-v from">${esc(seg.from||'—')}</span></div>
+      <div class="ba-row"><span class="ba-k">After</span><span class="ba-v to">${esc(seg.t)}</span></div>
+    </div>
+    ${seg.reason?`<div class="reason">${esc(seg.reason)}</div>`:''}
+    <button class="btn ghost" id="sd-close">Close</button>`, 82);
+  wrap.querySelector('#sd-close').onclick=()=>wrap.remove();
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function closeModal(){ el('modal-root').innerHTML=''; }
+function modal(html){ el('modal-root').innerHTML=`<div class="modal-bg" id="mbg"><div class="modal"><div class="grab"></div>${html}</div></div>`; el('mbg').onclick=e=>{ if(e.target.id==='mbg') closeModal(); }; }
+function sheetOverlay(inner,z){
+  const wrap=document.createElement('div'); wrap.className='modal-bg'; wrap.style.zIndex=z||80;
+  wrap.innerHTML=`<div class="modal"><div class="grab"></div>${inner}</div>`;
+  (el('app')||document.body).appendChild(wrap);
+  wrap.onclick=e=>{ if(e.target===wrap) wrap.remove(); };
+  return wrap;
+}
+function openConfirm(title,text,label,onYes,danger){
+  modal(`<h3>${esc(title)}</h3><p style="color:var(--ink-soft);line-height:1.55;margin-bottom:1.3rem">${esc(text)}</p>
+    <div class="row2"><button class="btn ghost" id="cf-no">Cancel</button><button class="btn ${danger?'danger':''}" id="cf-yes">${esc(label)}</button></div>`);
+  el('cf-no').onclick=closeModal; el('cf-yes').onclick=()=>{ closeModal(); onYes(); };
+}
+function openAddCat(){
+  const used=S.cats.map(c=>c.color);
+  const color=CAT_COLORS.find(c=>!used.includes(c))||CAT_COLORS[Math.floor(Math.random()*CAT_COLORS.length)];
+  modal(`<h3>New category</h3>
+    <div class="field"><label>Name</label><input class="input" id="ac-name" placeholder="e.g. Letters" autocomplete="off"></div>
+    <div class="row2" style="margin-top:0">
+      <div class="field" style="flex:0 0 32%"><label>Emoji</label><input class="input" id="ac-emoji" value="✳️" maxlength="2" style="text-align:center"></div>
+      <div class="field" style="flex:1"><label>Color</label><input class="input" id="ac-color" type="color" value="${color}" style="height:3.3rem;padding:.3rem"></div>
+    </div>
+    <div class="field"><label>Feedback tone (optional)</label><textarea class="input" id="ac-style" placeholder="How should Gemini judge this category? e.g. casual and natural, or formal and precise."></textarea></div>
+    <div class="row2"><button class="btn ghost" id="ac-cancel">Cancel</button><button class="btn" id="ac-save">Add</button></div>`);
+  el('ac-cancel').onclick=closeModal;
+  el('ac-save').onclick=()=>{
+    const name=el('ac-name').value.trim();
+    if(!name){ toast('Name it first'); return; }
+    if(S.cats.some(c=>c.name.toLowerCase()===name.toLowerCase())){ toast('That name exists'); return; }
+    S.cats.push({ name, color:el('ac-color').value, emoji:el('ac-emoji').value.trim()||'✳️', style:el('ac-style').value.trim() });
+    S.lastCat=name; save(); closeModal(); render(); toast('Category added','🏷️');
+  };
+}
+function openManageCat(name){
+  const cur=S.cats.find(x=>x.name===name); if(!cur) return;
+  modal(`<h3>Edit ${esc(cur.emoji)} ${esc(name)}</h3>
+    <div class="field"><label>Name</label><input class="input" id="mc-name" value="${esc(name)}" autocomplete="off"></div>
+    <div class="row2" style="margin-top:0">
+      <div class="field" style="flex:0 0 32%"><label>Emoji</label><input class="input" id="mc-emoji" value="${esc(cur.emoji)}" maxlength="2" style="text-align:center"></div>
+      <div class="field" style="flex:1"><label>Color</label><input class="input" id="mc-color" type="color" value="${cur.color}" style="height:3.3rem;padding:.3rem"></div>
+    </div>
+    <div class="field"><label>Feedback tone</label><textarea class="input" id="mc-style" placeholder="How should Gemini judge this category?">${esc(cur.style||'')}</textarea></div>
+    <button class="btn" id="mc-save">Save changes</button>
+    <button class="btn danger" id="mc-delete" style="margin-top:.6rem">Delete category</button>
+    <button class="btn ghost" id="mc-close" style="margin-top:.6rem">Cancel</button>`);
+  el('mc-close').onclick=closeModal;
+  el('mc-save').onclick=()=>{
+    const newName=el('mc-name').value.trim();
+    if(!newName){ toast('Name cannot be empty'); return; }
+    if(newName!==name && S.cats.some(x=>x.name.toLowerCase()===newName.toLowerCase())){ toast('That name exists'); return; }
+    if(newName!==name){
+      S.entries.forEach(e=>{ if(e.category===name){ e.category=newName; e.updatedAt=Date.now(); fbWrite(e); } });
+      if(S.lastCat===name) S.lastCat=newName;
+    }
+    cur.name=newName; cur.emoji=el('mc-emoji').value.trim()||cur.emoji; cur.color=el('mc-color').value; cur.style=el('mc-style').value.trim();
+    save(); closeModal(); render(); toast('Category updated','✏️');
+  };
+  el('mc-delete').onclick=()=>{
+    if(S.cats.length<=1){ toast('Keep at least one category'); return; }
+    openConfirm('Delete "'+name+'"?','Reviews under this category stay in History — only the label is removed.','Delete',()=>{
+      S.cats=S.cats.filter(x=>x.name!==name);
+      if(S.lastCat===name) S.lastCat=S.cats[0].name;
+      save(); closeModal(); render(); toast('Category deleted','🗑️');
+    },true);
+  };
+}
+
+/* ---------- data export/import ---------- */
+function exportData(){
+  const blob=new Blob([JSON.stringify({entries:S.entries,cats:S.cats,game:S.game},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='english-writing-feedback-backup-'+todayKey()+'.json'; a.click(); URL.revokeObjectURL(url); toast('Backup downloaded','💾');
+}
+function importData(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ try{
+      const d=JSON.parse(r.result); if(!d.entries) throw 0;
+      const map={}; S.entries.forEach(e=>map[e.id]=e); d.entries.forEach(e=>{ if(e&&e.id) map[e.id]=e; });
+      S.entries=Object.values(map); if(d.cats&&d.cats.length) S.cats=d.cats;
+      save(); render(); toast('Imported '+d.entries.length+' reviews','📥');
+    }catch(e){ toast('That file did not look right'); } };
+    r.readAsText(f); };
+  inp.click();
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot(){ load(); applyChrome(); render(); if(S.cfg.firebase) initFirebase(); }
+boot();
+</script>
+</body>
+</html>
