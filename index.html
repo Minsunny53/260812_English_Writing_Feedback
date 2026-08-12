@@ -431,20 +431,23 @@ textarea.miniinput{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.55;r
    GitHub Actions replaces the __PLACEHOLDER__ tokens below with
    repository secrets before publishing. Any token left unreplaced
    is ignored, so the app still runs locally (sync just stays off).
+
+   The Gemini API key is NOT here — it lives only inside the Apps
+   Script proxy (Script Properties), so it never reaches the browser.
+   The browser talks to that proxy via APPS_SCRIPT_URL for both
+   OCR/feedback and the study-sheet log.
    Notes:
-   • GEMINI_KEY / GEMINI_MODEL / SHEETS_WEBHOOK: plain one-line strings.
+   • GEMINI_MODEL / APPS_SCRIPT_URL: plain one-line strings.
    • FIREBASE_CONFIG: a single-line JSON string, e.g.
      {"apiKey":"…","databaseURL":"https://…","projectId":"…"}
    Baked values always win over anything stored in the browser.
    ============================================================ */
 const BAKED = {
-  geminiKey: '__GEMINI_KEY__',
-  model:     '__GEMINI_MODEL__',
-  firebase:  '__FIREBASE_CONFIG__',
-  sheet:     '__SHEETS_WEBHOOK__'
+  model:    '__GEMINI_MODEL__',
+  firebase: '__FIREBASE_CONFIG__',
+  sheet:    '__APPS_SCRIPT_URL__'
 };
 function bakedVal(v){ return (typeof v==='string' && v && !/^__[A-Z0-9_]+__$/.test(v)) ? v.trim() : ''; }
-let BAKED_KEY=false, BAKED_MODEL=false, BAKED_SYNC=false;
 
 /* ---------- Icons ---------- */
 const I = {
@@ -501,7 +504,7 @@ const S = {
   lastCat: 'Diary',
   settings: { fs:'md', theme:'light' },
   game: { streak:0, best:0, lastActive:null },
-  cfg: { geminiKey:'', model:'gemini-2.5-flash', firebase:'', sheet:'', guidelines:DEFAULT_GUIDELINES },
+  cfg: { model:'gemini-2.5-flash', firebase:'', sheet:'', guidelines:DEFAULT_GUIDELINES },
   ui: { tab:'write', filter:'All', q:'' }
 };
 
@@ -523,13 +526,10 @@ function load(){
   if(typeof S.cfg.guidelines!=='string') S.cfg.guidelines=DEFAULT_GUIDELINES;
 
   // deployment secrets (GitHub Actions) override anything stored locally
-  const bKey=bakedVal(BAKED.geminiKey), bModel=bakedVal(BAKED.model),
-        bFb=bakedVal(BAKED.firebase), bSheet=bakedVal(BAKED.sheet);
-  if(bKey){ S.cfg.geminiKey=bKey; BAKED_KEY=true; }
-  if(bModel){ S.cfg.model=bModel; BAKED_MODEL=true; }
+  const bModel=bakedVal(BAKED.model), bFb=bakedVal(BAKED.firebase), bSheet=bakedVal(BAKED.sheet);
+  if(bModel){ S.cfg.model=bModel; }
   if(bFb){ S.cfg.firebase=bFb; }
   if(bSheet){ S.cfg.sheet=bSheet; }
-  BAKED_SYNC = !!(bFb || bSheet);
 }
 function save(){
   rawSet(KEY, JSON.stringify({
@@ -615,28 +615,35 @@ function sheetPush(action, entry){
 }
 
 /* ============================================================
-   GEMINI — OCR + feedback
+   GEMINI — OCR + feedback, via the Apps Script proxy
+   The browser never holds the API key; the proxy (S.cfg.sheet)
+   forwards the request to Gemini using its server-side key.
    ============================================================ */
-function geminiEndpoint(){ return 'https://generativelanguage.googleapis.com/v1beta/models/'+(S.cfg.model||'gemini-2.5-flash')+':generateContent'; }
 async function geminiCall(parts, jsonMode){
-  if(!S.cfg.geminiKey) throw new Error('Add your Gemini API key in Settings first.');
-  const body={ contents:[{parts}], generationConfig:{ temperature: jsonMode?0.35:0.05 } };
-  if(jsonMode) body.generationConfig.responseMimeType='application/json';
+  if(!S.cfg.sheet) throw new Error('No backend is configured for this build.');
+  const payload={ contents:[{parts}], generationConfig:{ temperature: jsonMode?0.35:0.05 } };
+  if(jsonMode) payload.generationConfig.responseMimeType='application/json';
   let res;
   try{
-    res=await fetch(geminiEndpoint(),{ method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':S.cfg.geminiKey}, body:JSON.stringify(body) });
-  }catch(e){ throw new Error('Network error reaching Gemini. Check your connection, and run from a local server (not file://).'); }
-  if(!res.ok){
-    let detail=''; try{ const j=await res.json(); detail=(j.error&&j.error.message)||''; }catch(e){ try{ detail=(await res.text()).slice(0,200); }catch(_){} }
-    if(res.status===400 && /API key/i.test(detail)) throw new Error('Gemini rejected the API key. Re-check it in Settings.');
-    if(res.status===404) throw new Error('Model "'+(S.cfg.model)+'" was not found for this key. Try a different model name in Settings (free tier = Flash models).');
-    if(res.status===429) throw new Error('Rate limit reached on the free tier. Wait a minute and try again.');
-    throw new Error('Gemini error '+res.status+(detail?': '+detail:''));
+    res=await fetch(S.cfg.sheet,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ action:'gemini', model:(S.cfg.model||'gemini-2.5-flash'), payload }) });
+  }catch(e){ throw new Error('Network error reaching the backend. Check the Apps Script URL and that it is deployed to "Anyone".'); }
+  if(!res.ok) throw new Error('Backend error '+res.status+'. Re-check the Apps Script deployment.');
+  let out;
+  try{ out=JSON.parse(await res.text()); }
+  catch(e){ throw new Error('The backend returned an unreadable response. Re-deploy the Apps Script and try again.'); }
+  if(!out || out.ok!==true){
+    const d=(out&&out.error)||'', st=out&&out.status;
+    if(/GEMINI_KEY/i.test(d)) throw new Error('The proxy has no Gemini key. Add GEMINI_KEY in the Apps Script → Project Settings → Script Properties.');
+    if(st===404) throw new Error('Model "'+(S.cfg.model)+'" not found. Set the GEMINI_MODEL secret to a Flash model you can access.');
+    if(st===429) throw new Error('Gemini rate limit reached (free tier). Wait a minute and try again.');
+    if(st===400 && /API key|API_KEY/i.test(d)) throw new Error('The Gemini key in the proxy was rejected. Re-check GEMINI_KEY in Script Properties.');
+    throw new Error('Gemini error'+(st?' '+st:'')+(d?': '+String(d).slice(0,200):''));
   }
-  const data=await res.json();
-  const cand=data.candidates&&data.candidates[0];
+  const data=out.data;
+  const cand=data&&data.candidates&&data.candidates[0];
   if(!cand){
-    if(data.promptFeedback&&data.promptFeedback.blockReason) throw new Error('The request was blocked ('+data.promptFeedback.blockReason+').');
+    if(data&&data.promptFeedback&&data.promptFeedback.blockReason) throw new Error('The request was blocked ('+data.promptFeedback.blockReason+').');
     throw new Error('Gemini returned no result.');
   }
   const txt=((cand.content&&cand.content.parts)||[]).map(p=>p.text||'').join('').trim();
@@ -776,7 +783,7 @@ async function addFiles(fileList){
 }
 
 async function analyze(){
-  if(!S.cfg.geminiKey){ toast('Add your Gemini key in Settings','🔑'); S.ui.tab='settings'; render(); return; }
+  if(!S.cfg.sheet){ toast('No backend is configured for this build','🔌'); return; }
   let text='';
   if(W.mode==='type'){
     text=(el('type-input')?el('type-input').value:W.text||'').trim();
@@ -899,8 +906,8 @@ function viewWrite(){
   if(W.phase==='result' && W.result) return resultView(W.result, false);
   if(W.phase==='ocr'||W.phase==='feedback') return processingView();
 
-  const keyMissing = !S.cfg.geminiKey;
-  const noteKey = keyMissing ? `<div class="notice"><span>🔑</span><div>Add your <b>Gemini API key</b> in <a data-goto="settings">Settings</a> to turn photos into feedback. It stays in this browser only.</div></div>` : '';
+  const keyMissing = !S.cfg.sheet;
+  const noteKey = keyMissing ? `<div class="notice err"><span>🔌</span><div>No <b>backend</b> is set for this build. Add the <b>APPS_SCRIPT_URL</b> secret (your Apps Script /exec URL) so the app can reach the Gemini proxy. Your Gemini key stays inside the Apps Script, never here.</div></div>` : '';
   const err = W.error ? `<div class="notice err"><span>⚠️</span><div>${esc(W.error)}</div></div>` : '';
 
   let capture;
@@ -1132,7 +1139,7 @@ function sparkline(vals){
 /* ---------- SETTINGS ---------- */
 function viewSettings(){
   const st=S.settings;
-  const gkOn=!!S.cfg.geminiKey, fbOn=!!S.cfg.firebase&&fbReady, shOn=!!S.cfg.sheet;
+  const fbOn=!!S.cfg.firebase&&fbReady, shOn=!!S.cfg.sheet;
   return `
     <div class="setgroup">
       <div class="gh">Display</div>
@@ -1145,24 +1152,6 @@ function viewSettings(){
         </div></div>
       <div class="setrow"><div><div class="l">Dark mode</div><div class="d">Easy on the eyes at night</div></div>
         <button class="switch ${st.theme==='dark'?'on':''}" id="sw-theme"><i></i></button></div>
-    </div>
-
-    <div class="setgroup">
-      <div class="gh">Gemini</div>
-      ${BAKED_KEY ? `
-      <div class="setrow"><div><div class="l">API key</div><div class="d">Provided by this deployment (from your GitHub secret) — not shown here.</div></div>
-        <span class="synced on">● Set</span></div>` : `
-      <div class="setrow col">
-        <div style="display:flex;justify-content:space-between;align-items:center;width:100%"><div class="l">API key</div>
-          <span class="synced ${gkOn?'on':'off'}">${gkOn?'● Set':'○ Off'}</span></div>
-        <div class="d" style="margin:.15rem 0 .6rem">From Google AI Studio (free tier works). Stored only in this browser — never uploaded.</div>
-        <input class="miniinput" id="cfg-key" type="password" placeholder="AQ.…" value="${esc(S.cfg.geminiKey)}" autocomplete="off">
-      </div>`}
-      <div class="setrow col">
-        <div class="l">Model${BAKED_MODEL?' <span class="synced on" style="margin-left:.4rem">deployment</span>':''}</div>
-        <div class="d" style="margin:.15rem 0 .6rem">Free tier supports Flash (vision) models. Change this if you get a "model not found" error, e.g. to the newest Flash you can access.</div>
-        <input class="miniinput" id="cfg-model" placeholder="gemini-2.5-flash" value="${esc(S.cfg.model)}" ${BAKED_MODEL?'disabled':''} autocomplete="off">
-      </div>
     </div>
 
     <div class="setgroup">
@@ -1196,7 +1185,7 @@ function viewSettings(){
         <button class="btn ghost" style="width:auto;padding:.7rem 1rem;color:var(--red)" id="btn-clear">Clear</button></div>
     </div>
     <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:.5rem 0 .3rem">
-      Sync · History ${fbOn?'●':(S.cfg.firebase?'◌':'○')} ${fbOn?'on':(S.cfg.firebase?'connecting…':'off')} · Sheet ${shOn?'● on':'○ off'}</p>
+      Sync · History ${fbOn?'●':(S.cfg.firebase?'◌':'○')} ${fbOn?'on':(S.cfg.firebase?'connecting…':'off')} · Backend ${shOn?'● on':'○ off'}</p>
     <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:0 0 1rem">
       English Writing Feedback · ${hasLS?'Saved on this device':'\u26A0 Private mode — data will not persist here. Run from a local server.'}</p>`;
 }
@@ -1315,8 +1304,6 @@ function refreshHistory(){
 function bindSettings(){
   document.querySelectorAll('#fs-seg button').forEach(b=>b.onclick=()=>{ S.settings.fs=b.dataset.fs; save(); applyChrome(); render(); });
   const sw=el('sw-theme'); if(sw) sw.onclick=()=>{ S.settings.theme=S.settings.theme==='dark'?'light':'dark'; save(); applyChrome(); render(); };
-  const key=el('cfg-key'); if(key) key.onchange=()=>{ S.cfg.geminiKey=key.value.trim(); save(); };
-  const mdl=el('cfg-model'); if(mdl) mdl.onchange=()=>{ S.cfg.model=mdl.value.trim()||'gemini-2.5-flash'; save(); };
   const guide=el('cfg-guide'); if(guide) guide.onchange=()=>{ S.cfg.guidelines=guide.value.trim()||DEFAULT_GUIDELINES; save(); toast('Guidance saved','📝'); };
   const gr=el('btn-guide-reset'); if(gr) gr.onclick=()=>{ S.cfg.guidelines=DEFAULT_GUIDELINES; save(); render(); toast('Guidance reset','↩️'); };
   document.querySelectorAll('[data-editcat]').forEach(b=>b.onclick=()=>openManageCat(b.dataset.editcat));
