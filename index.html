@@ -75,7 +75,7 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 .nav-brand{display:none}
-#overlay-root,#modal-root{display:contents}
+#overlay-root,#modal-root,#auth-root{display:contents}
 
 /* ---------- Bottom nav ---------- */
 .tabbar{flex:none;background:var(--surface);
@@ -370,6 +370,28 @@ textarea.miniinput{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.55;r
 .ovhead h2{font-size:1.15rem;font-weight:800;flex:1;min-width:0}
 .ovbody{flex:1;overflow-y:auto;padding:.9rem 1.15rem calc(env(safe-area-inset-bottom) + 1.6rem)}
 
+/* ---------- Auth overlay ---------- */
+.authwrap{position:absolute;inset:0;z-index:80;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:1.4rem;animation:fade .25s}
+.authcard{width:100%;max-width:26rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-lg);padding:1.7rem 1.5rem calc(env(safe-area-inset-bottom) + 1.5rem)}
+.authbrand{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.05rem;letter-spacing:-.01em;margin-bottom:1.3rem}
+.authcard h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.7rem;margin-bottom:.35rem}
+.authsub{color:var(--ink-soft);font-size:.92rem;line-height:1.5;margin-bottom:1.3rem}
+.authfield{margin-bottom:.9rem}
+.authfield label{display:block;font-weight:700;font-size:.78rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin:0 0 .4rem .15rem}
+.authcard .input{width:100%;background:var(--surface2);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:1.05rem;font-weight:500}
+.authcard .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 15%,transparent)}
+.authcard .btn{margin-top:.4rem}
+.autherr{background:color-mix(in srgb,var(--red) 12%,transparent);border:1px solid color-mix(in srgb,var(--red) 35%,transparent);
+  color:var(--ink);border-radius:var(--r-xs);padding:.6rem .8rem;font-size:.86rem;font-weight:600;margin-bottom:.9rem;line-height:1.45}
+.authskip{display:block;width:100%;margin-top:1rem;background:none;color:var(--ink-soft);font-weight:600;font-size:.86rem;padding:.4rem}
+.authskip:active{color:var(--ink)}
+.authbanner{display:flex;align-items:center;gap:.7rem;background:var(--primary-soft);border-radius:var(--r-sm);
+  padding:.8rem 1rem;margin-bottom:.9rem}
+.authbanner .t{flex:1;font-size:.86rem;font-weight:600;color:var(--primary-ink);line-height:1.4}
+.authbanner button{flex:none;background:var(--primary);color:#fff;font-weight:700;font-size:.85rem;padding:.5rem .9rem;border-radius:999px}
+
 /* ---------- Toast ---------- */
 #toast{position:absolute;bottom:5.2rem;left:50%;transform:translateX(-50%) translateY(2rem);z-index:90;
   background:var(--ink);color:var(--bg);padding:.8rem 1.2rem;border-radius:999px;font-weight:700;font-size:.92rem;
@@ -415,6 +437,7 @@ textarea.miniinput{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.55;r
   <nav class="tabbar" id="tabbar"></nav>
   <div id="overlay-root"></div>
   <div id="modal-root"></div>
+  <div id="auth-root"></div>
   <div id="toast"></div>
 </div>
 
@@ -505,6 +528,7 @@ const S = {
   settings: { fs:'md', theme:'light' },
   game: { streak:0, best:0, lastActive:null },
   cfg: { model:'gemini-2.5-flash', firebase:'', sheet:'', guidelines:DEFAULT_GUIDELINES },
+  auth: null,
   ui: { tab:'write', filter:'All', q:'' }
 };
 
@@ -569,7 +593,7 @@ function touchStreak(){
 /* ============================================================
    SYNC — Firebase Realtime DB + Google Sheets webhook
    ============================================================ */
-let fbDB=null, fbReady=false, fbFirstSync=true, fbStatus='';
+let fbDB=null, fbAuth=null, fbReady=false, authReady=false, fbFirstSync=true, fbStatus='', authDismissed=false;
 function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 function parseFirebaseConfig(raw){
   let s=(raw||'').trim(); if(!s) return null;
@@ -578,37 +602,80 @@ function parseFirebaseConfig(raw){
   try{ return (new Function('return ('+s+')'))(); }catch(e){}
   return null;
 }
-function fbRefreshStatus(){ if(S.ui.tab==='settings' && el('view')) render(); }
+function fbRefreshStatus(){ if(el('view')) render(); }
+/* is history actually syncing? = firebase up AND signed in */
+function isSynced(){ return !!(fbReady && S.auth); }
+
 async function initFirebase(){
-  fbReady=false; fbDB=null; fbFirstSync=true;
+  fbReady=false; fbDB=null; fbAuth=null; authReady=false; fbFirstSync=true;
   if(!S.cfg.firebase){ fbStatus=''; return fbRefreshStatus(); }
   const cfg=parseFirebaseConfig(S.cfg.firebase);
   if(!cfg){ fbStatus="Couldn't read the config — paste the whole { … } block."; return fbRefreshStatus(); }
   if(!cfg.databaseURL){ fbStatus="This config has no databaseURL. Open Realtime Database in the console and add its URL."; return fbRefreshStatus(); }
   try{
-    if(!window.firebase || !window.firebase.database){
+    if(!window.firebase || !window.firebase.database || !window.firebase.auth){
       await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
       await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');
     }
-    if(!window.firebase || !window.firebase.database) throw new Error('sdk-unavailable');
+    if(!window.firebase || !window.firebase.database || !window.firebase.auth) throw new Error('sdk-unavailable');
     if(!window.firebase.apps.length) window.firebase.initializeApp(cfg);
-    fbDB=window.firebase.database(); fbReady=true; fbStatus='Connected'; fbRefreshStatus();
-    fbDB.ref('feedback').on('value', snap=>{
-      const val=snap.val()||{}; const remote=Object.values(val);
-      const map={}; S.entries.forEach(e=>map[e.id]=e);
-      remote.forEach(e=>{ if(!e||!e.id) return; if(!map[e.id]||(e.updatedAt||0)>=(map[e.id].updatedAt||0)) map[e.id]=e; });
-      S.entries=Object.values(map); save();
-      if(fbFirstSync){ fbFirstSync=false; const ids=new Set(remote.map(e=>e&&e.id)); S.entries.forEach(e=>{ if(!ids.has(e.id)) fbWrite(e); }); }
-      if(S.ui.tab==='history'||S.ui.tab==='insights'||S.ui.tab==='settings') render();
-    }, err=>{ fbStatus='Connected, but the database denied access — open Rules and allow read/write, then Save again.'; fbReady=true; fbRefreshStatus(); });
+    fbDB=window.firebase.database(); fbAuth=window.firebase.auth(); fbReady=true;
+    fbAuth.onAuthStateChanged(function(user){
+      authReady=true; fbFirstSync=true;
+      if(user){
+        S.auth={ uid:user.uid, email:user.email||'' };
+        fbStatus='Connected';
+        attachFeedback();
+        closeAuth();
+      } else {
+        S.auth=null;
+        fbStatus='Signed out';
+        try{ fbDB.ref('feedback').off(); }catch(e){}
+        maybeShowAuthGate();
+      }
+      render();
+    });
   }catch(e){
     fbReady=false;
     fbStatus="Couldn't load Firebase. If the address starts with file://, run this from a local server instead.";
     fbRefreshStatus();
   }
 }
-function fbWrite(entry){ if(fbReady&&fbDB){ try{ fbDB.ref('feedback/'+entry.id).set(entry); }catch(e){} } }
-function fbRemove(id){ if(fbReady&&fbDB){ try{ fbDB.ref('feedback/'+id).remove(); }catch(e){} } }
+function attachFeedback(){
+  if(!fbDB) return;
+  try{ fbDB.ref('feedback').off(); }catch(e){}
+  fbDB.ref('feedback').on('value', snap=>{
+    const val=snap.val()||{}; const remote=Object.values(val);
+    const map={}; S.entries.forEach(e=>map[e.id]=e);
+    remote.forEach(e=>{ if(!e||!e.id) return; if(!map[e.id]||(e.updatedAt||0)>=(map[e.id].updatedAt||0)) map[e.id]=e; });
+    S.entries=Object.values(map); save();
+    if(fbFirstSync){ fbFirstSync=false; const ids=new Set(remote.map(e=>e&&e.id)); S.entries.forEach(e=>{ if(!ids.has(e.id)) fbWrite(e); }); }
+    if(S.ui.tab==='history'||S.ui.tab==='insights'||S.ui.tab==='settings') render();
+  }, err=>{
+    fbStatus='Signed in, but the database denied access — check that this account matches the database rules.';
+    render();
+  });
+}
+function fbWrite(entry){ if(isSynced()&&fbDB){ try{ fbDB.ref('feedback/'+entry.id).set(entry); }catch(e){} } }
+function fbRemove(id){ if(isSynced()&&fbDB){ try{ fbDB.ref('feedback/'+id).remove(); }catch(e){} } }
+
+/* ---------- Auth (email / password) ---------- */
+function authError(e){
+  const c=(e&&e.code)||'';
+  if(/wrong-password|invalid-credential/.test(c)) return 'Wrong email or password.';
+  if(/user-not-found/.test(c)) return 'No account with that email. Try creating one.';
+  if(/email-already-in-use/.test(c)) return 'That email already has an account. Try signing in.';
+  if(/invalid-email/.test(c)) return 'That email address looks invalid.';
+  if(/weak-password/.test(c)) return 'Password should be at least 6 characters.';
+  if(/too-many-requests/.test(c)) return 'Too many attempts. Wait a moment and try again.';
+  if(/network-request-failed/.test(c)) return 'Network error. Check your connection.';
+  return (e&&e.message)||'Something went wrong. Try again.';
+}
+async function authLogin(email, pw){ await fbAuth.signInWithEmailAndPassword(email, pw); }
+async function authSignup(email, pw){ await fbAuth.createUserWithEmailAndPassword(email, pw); }
+function authLogout(){ if(fbAuth){ authDismissed=true; fbAuth.signOut(); } }
+
 function sheetPush(action, entry){
   if(!S.cfg.sheet) return;
   try{ fetch(S.cfg.sheet,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,entry})}).catch(()=>{}); }catch(e){}
@@ -1070,7 +1137,9 @@ function filteredEntries(){
   return list;
 }
 function viewHistory(){
-  if(S.entries.length===0) return emptyState('📚','No feedback yet','Head to Write, photograph a page of your English, and your reviewed pieces will collect here.');
+  const banner = (S.cfg.firebase && authReady && !S.auth)
+    ? `<div class="authbanner"><span class="t">Showing this device only. Sign in to sync your history across devices.</span><button id="h-signin">Sign in</button></div>` : '';
+  if(S.entries.length===0) return banner + emptyState('📚','No feedback yet','Head to Write, photograph a page of your English, and your reviewed pieces will collect here.');
   const catRow=['All','Saved'].concat(S.cats.map(c=>c.name)).map(f=>{
     const on=S.ui.filter===f;
     const c=(f==='All'||f==='Saved')?null:catOf(f);
@@ -1080,6 +1149,7 @@ function viewHistory(){
   const list=filteredEntries();
   const rows=list.length?list.map(historyRow).join(''):`<div class="empty" style="padding:2.5rem 1rem"><p>Nothing matches this view.</p></div>`;
   return `
+    ${banner}
     <div class="searchwrap">${I.search}<input class="search" id="h-search" placeholder="Search your writing" value="${esc(S.ui.q)}" autocomplete="off"></div>
     <div class="filterrow">${catRow}</div>
     <div id="h-list">${rows}</div>`;
@@ -1139,7 +1209,21 @@ function sparkline(vals){
 /* ---------- SETTINGS ---------- */
 function viewSettings(){
   const st=S.settings;
-  const fbOn=!!S.cfg.firebase&&fbReady, shOn=!!S.cfg.sheet;
+  const fbOn=isSynced(), shOn=!!S.cfg.sheet;
+  const account = S.cfg.firebase ? `
+    <div class="setgroup">
+      <div class="gh">Account</div>
+      ${S.auth ? `
+      <div class="setrow"><div><div class="l">Signed in</div><div class="d">${esc(S.auth.email||'—')}</div></div>
+        <span class="synced on">● Syncing</span></div>
+      <div class="setrow"><div><div class="l">Sign out</div><div class="d">Stops syncing on this device</div></div>
+        <button class="btn ghost" style="width:auto;padding:.7rem 1rem" id="btn-logout">Sign out</button></div>
+      ` : `
+      <div class="setrow"><div><div class="l">Not signed in</div><div class="d">Sign in to sync history across devices</div></div>
+        <button class="btn" style="width:auto;padding:.7rem 1.1rem" id="btn-login">Sign in</button></div>
+      ${fbStatus && !authReady ? `<div class="setrow col"><div class="d">${esc(fbStatus)}</div></div>`:''}
+      `}
+    </div>` : '';
   return `
     <div class="setgroup">
       <div class="gh">Display</div>
@@ -1153,6 +1237,7 @@ function viewSettings(){
       <div class="setrow"><div><div class="l">Dark mode</div><div class="d">Easy on the eyes at night</div></div>
         <button class="switch ${st.theme==='dark'?'on':''}" id="sw-theme"><i></i></button></div>
     </div>
+    ${account}
 
     <div class="setgroup">
       <div class="gh">Feedback guidance</div>
@@ -1185,7 +1270,7 @@ function viewSettings(){
         <button class="btn ghost" style="width:auto;padding:.7rem 1rem;color:var(--red)" id="btn-clear">Clear</button></div>
     </div>
     <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:.5rem 0 .3rem">
-      Sync · History ${fbOn?'●':(S.cfg.firebase?'◌':'○')} ${fbOn?'on':(S.cfg.firebase?'connecting…':'off')} · Backend ${shOn?'● on':'○ off'}</p>
+      Sync · History ${fbOn?'● on':(S.cfg.firebase?(S.auth?'◌ connecting…':'○ signed out'):'○ off')} · Backend ${shOn?'● on':'○ off'}</p>
     <p style="text-align:center;color:var(--ink-soft);font-size:.78rem;font-weight:600;margin:0 0 1rem">
       English Writing Feedback · ${hasLS?'Saved on this device':'\u26A0 Private mode — data will not persist here. Run from a local server.'}</p>`;
 }
@@ -1290,6 +1375,7 @@ function copyText(txt){
 }
 
 function bindHistory(){
+  const si=el('h-signin'); if(si) si.onclick=()=>{ authDismissed=false; authMode='login'; openAuth(); };
   const s=el('h-search'); if(s) s.oninput=()=>{ S.ui.q=s.value; refreshHistory(); };
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{ S.ui.filter=b.dataset.filter; render(); });
   document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openResult(b.dataset.open));
@@ -1307,6 +1393,8 @@ function bindSettings(){
   const guide=el('cfg-guide'); if(guide) guide.onchange=()=>{ S.cfg.guidelines=guide.value.trim()||DEFAULT_GUIDELINES; save(); toast('Guidance saved','📝'); };
   const gr=el('btn-guide-reset'); if(gr) gr.onclick=()=>{ S.cfg.guidelines=DEFAULT_GUIDELINES; save(); render(); toast('Guidance reset','↩️'); };
   document.querySelectorAll('[data-editcat]').forEach(b=>b.onclick=()=>openManageCat(b.dataset.editcat));
+  const li=el('btn-login'); if(li) li.onclick=()=>{ authDismissed=false; authMode='login'; openAuth(); };
+  const lo=el('btn-logout'); if(lo) lo.onclick=()=>openConfirm('Sign out?','Your synced history stays in the cloud. This device will stop syncing until you sign in again.','Sign out',()=>{ authLogout(); },true);
   const ex=el('btn-export'); if(ex) ex.onclick=exportData;
   const im=el('btn-import'); if(im) im.onclick=importData;
   const cl=el('btn-clear'); if(cl) cl.onclick=()=>openConfirm('Clear history?','This deletes reviews saved on this device. Copies already sent to Firebase or your Sheet are not touched.','Clear',()=>{ S.entries=[]; save(); render(); toast('History cleared','🧹'); },true);
@@ -1360,6 +1448,51 @@ function sheetOverlay(inner,z){
   wrap.onclick=e=>{ if(e.target===wrap) wrap.remove(); };
   return wrap;
 }
+/* ============================================================
+   AUTH OVERLAY (email / password sign-in)
+   ============================================================ */
+let authMode='login', authBusy=false;
+function maybeShowAuthGate(){
+  if(S.cfg.firebase && authReady && !S.auth && !authDismissed) openAuth();
+}
+function closeAuth(){ const r=el('auth-root'); if(r) r.innerHTML=''; }
+function openAuth(){
+  const signup = authMode==='signup';
+  el('auth-root').innerHTML=`
+    <div class="authwrap">
+      <div class="authcard">
+        <div class="authbrand"><span class="brand-dot"></span> English Writing Feedback</div>
+        <h2>${signup?'Create account':'Sign in'}</h2>
+        <p class="authsub">${signup?'Make an account to sync your history across devices.':'Sign in to sync your history across your devices.'}</p>
+        <div class="authfield"><label>Email</label><input class="input" id="au-email" type="email" autocomplete="username" placeholder="you@example.com"></div>
+        <div class="authfield"><label>Password</label><input class="input" id="au-pw" type="password" autocomplete="${signup?'new-password':'current-password'}" placeholder="${signup?'At least 6 characters':'Your password'}"></div>
+        <div class="autherr" id="au-err" style="display:none"></div>
+        <button class="btn" id="au-go">${signup?'Create account':'Sign in'}</button>
+        <button class="btn ghost" id="au-toggle" style="margin-top:.6rem">${signup?'I already have an account':'Create an account instead'}</button>
+        <button class="authskip" id="au-skip">Use on this device only</button>
+      </div>
+    </div>`;
+  const email=el('au-email'), pw=el('au-pw'), err=el('au-err'), go=el('au-go');
+  const showErr=m=>{ err.textContent=m; err.style.display='block'; };
+  const submit=async()=>{
+    if(authBusy) return;
+    const e=(email.value||'').trim(), p=pw.value||'';
+    if(!e||!p){ showErr('Enter your email and password.'); return; }
+    authBusy=true; go.disabled=true; go.textContent=signup?'Creating…':'Signing in…'; err.style.display='none';
+    try{
+      if(signup) await authSignup(e,p); else await authLogin(e,p);
+      /* onAuthStateChanged will close the overlay and refresh */
+    }catch(ex){
+      authBusy=false; go.disabled=false; go.textContent=signup?'Create account':'Sign in';
+      showErr(authError(ex));
+    }
+  };
+  go.onclick=submit;
+  pw.onkeydown=ev=>{ if(ev.key==='Enter') submit(); };
+  el('au-toggle').onclick=()=>{ authMode=signup?'login':'signup'; openAuth(); };
+  el('au-skip').onclick=()=>{ authDismissed=true; closeAuth(); toast('Using this device only — sign in from Settings to sync','📴'); };
+}
+
 function openConfirm(title,text,label,onYes,danger){
   modal(`<h3>${esc(title)}</h3><p style="color:var(--ink-soft);line-height:1.55;margin-bottom:1.3rem">${esc(text)}</p>
     <div class="row2"><button class="btn ghost" id="cf-no">Cancel</button><button class="btn ${danger?'danger':''}" id="cf-yes">${esc(label)}</button></div>`);
